@@ -1,0 +1,68 @@
+<section class="module" id="module-2">
+  <!-- Screen 1: The speaker's lens -->
+  <div class="screen">
+    <div class="screen-content">
+      <span class="module-label">Module 2</span>
+      <h2>新路的思维模型：从"模型视角"理解 Harness</h2>
+      <p class="lead">大多数开发者从"怎么让代码好维护"出发设计 agent 系统。<strong>新路从"模型怎么工作"出发。</strong>这是两种完全不同的思维方式。</p>
+    </div>
+  </div>
+
+  <!-- Screen 2: The core belief -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>模型的"母语"是什么？</h3>
+      <div class="quote-translation" data-type="insight-pair">
+        <div class="quote-left">
+          <span class="quote-speaker">新路</span>
+          <blockquote>"如果你稍微思考一下 transformer 模型是怎么自回归的、推理是怎样运行的、agent 模型到底怎么工作的……你再结合这个来思考所有 agent 的最佳实践，你就觉得非常 make sense。"</blockquote>
+        </div>
+        <div class="insight-right">
+          <span class="insight-label">🔑 可操作洞见</span>
+          <p>新路的所有判断都来自一个底层信念：<strong>工程应该适配模型，而不是让模型适配工程。</strong></p>
+          <p class="insight-trigger"><strong>何时使用：</strong>每次技术评审时问——"这个设计是从模型视角出发的，还是从开发者便利出发的？"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Conversation flow — paradigm war -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>两种派系的战争</h3>
+      <p>当前 agent 开发存在两条路线。新路站哪边，一目了然：</p>
+      <div class="chat-group" id="paradigm-debate">
+        <div class="chat-message chat-left">
+          <span class="chat-sender">Prompt Flow 派（LangChain / LangGraph）</span>
+          <p>我们预设好每个节点的输入输出，用状态图控制流转。这样可控、可调试、成本低。</p>
+        </div>
+        <div class="chat-message chat-right">
+          <span class="chat-sender">Agent-Native 派（Cloud Code / 新路）</span>
+          <p>你预设的每一步都是在限制模型。模型是自回归的——它应该自己决定下一步做什么。你的"可控性"是模型能力的上限。</p>
+        </div>
+        <div class="chat-message chat-left">
+          <span class="chat-sender">Prompt Flow 派</span>
+          <p>但完全放开的话，模型乱调用工具怎么办？成本和延迟怎么控制？</p>
+        </div>
+        <div class="chat-message chat-right">
+          <span class="chat-sender">Agent-Native 派</span>
+          <p>More context, less control。给它充分的上下文和工具，限制只在于"某些工具不能调"，而不是"你必须按我的顺序调"。模型越强，你的预设流程反而越成为瓶颈。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 4: Credibility note -->
+  <div class="screen">
+    <div class="screen-content">
+      <div class="callout-insight">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-text">
+          <strong>可信度校准：</strong>新路的立场非常鲜明——他正在做一个 agent-native 的工具链创业公司（1KB/CRAI）。他对 LangChain 的批判有工程实践支撑（🟡），但也带有创业者的竞争立场。他的框架很有用，但不要把它当作"已被验证的行业共识"。
+        </div>
+      </div>
+      <h3>但核心洞见是硬的</h3>
+      <p>不管你是不是站新路这边，他的底层信念——<strong>"工程的目的是放大模型的能力，而不是限制它"</strong>——是对所有 agent 产品人都适用的检验标准。</p>
+    </div>
+  </div>
+</section>

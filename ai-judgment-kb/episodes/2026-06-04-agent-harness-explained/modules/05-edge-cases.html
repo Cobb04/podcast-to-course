@@ -1,0 +1,89 @@
+<section class="module" id="module-5">
+  <!-- Screen 1 -->
+  <div class="screen">
+    <div class="screen-content">
+      <span class="module-label">Module 5</span>
+      <h2>边界与失效：什么时候 Harness 不重要？</h2>
+      <p class="lead">不是所有场景都需要复杂的 harness。<strong>知道什么时候不优化 harness，和知道什么时候优化一样重要。</strong></p>
+    </div>
+  </div>
+
+  <!-- Screen 2: When harness doesn't matter -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>Harness 失效的三个场景</h3>
+      <div class="pattern-cards">
+        <div class="pattern-card">
+          <span class="pattern-icon">1️⃣</span>
+          <h4>模型本身不够强</h4>
+          <p>如果基础任务成功率不到 60%，先换模型。Harness 是放大器——信号太弱，放大噪声没意义。</p>
+          <p class="credibility-badge">🟢 High | 基本工程常识</p>
+        </div>
+        <div class="pattern-card">
+          <span class="pattern-icon">2️⃣</span>
+          <h4>任务输入输出完全确定</h4>
+          <p>如果是固定流程自动化（数据清洗、定时报表），传统工程方案比 agent 更可靠、更便宜。不要为了用 AI 而用 AI。</p>
+          <p class="credibility-badge">🟡 Medium | 新路的工程经验</p>
+        </div>
+        <div class="pattern-card">
+          <span class="pattern-icon">3️⃣</span>
+          <h4>模型能力还在快速进化</h4>
+          <p>新路的核心观点：这个领域还很早期。过早地在一个还在剧烈变化的技术上建立复杂的工程体系，会让你的产品在下一代模型发布时变成技术债。</p>
+          <p class="credibility-badge">🔴 Low | 新路的预测性判断</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: New road's own limits -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>新路自己方案的限制（诚实很重要）</h3>
+      <p>新路的 1KB 做了一个极轻量的 Unix Computer（1KB 大小，在内存中用数据结构实现）。但他也坦承：</p>
+      <div class="quote-translation" data-type="insight-pair">
+        <div class="quote-left">
+          <span class="quote-speaker">新路（被问到"牺牲了什么特性"时）</span>
+          <blockquote>"我们当然做了一些 trade-off。我们上面没有办法真实地运行 GCC 编译器，真的在我们这台虚拟计算机里跑一个浏览器。有很多需要依赖真实代码执行和编译的，我们是做不了的。"</blockquote>
+        </div>
+        <div class="insight-right">
+          <span class="insight-label">🔑 这个诚实的 trade-off 很重要</span>
+          <p>任何 harness 方案都有取舍。新路选择了极致轻量（1KB）→ 牺牲了重型计算能力。Cloud Code 选择了完整沙箱（E2B）→ 牺牲了轻量和跨平台。没有"最优解"，只有"最适配你的场景"。</p>
+          <p class="insight-trigger"><strong>何时使用：</strong>评估任何 harness 方案时，先问它 trade-off 了什么。如果对方说"没有 trade-off"，那是在骗你。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 4: When harness will be commoditized -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>如果 Cloud 把 Harness 做成托管服务了呢？</h3>
+      <p>主持人问了一个尖锐的问题：Cloud 已经推出了 Managed Agents——如果云厂商把 harness 都封装好了，还有必要自己了解细节吗？</p>
+      <div class="callout-insight">
+        <div class="callout-icon">🔮</div>
+        <div class="callout-text">
+          <strong>新路的回答：</strong>"两三年以后 harness 会成为一个非常清晰的、开箱即用的东西。但在这个过程中——现在还是技术周期——你做产品本质上是在吃技术周期变化的红利。你还是要自己理解里面在变的是什么。"
+        </div>
+      </div>
+      <p>换句话说：<strong>未来你不用自己搭 harness。但现在，理解 harness 是你判断"什么值得做、什么等一等"的前提。</strong></p>
+    </div>
+  </div>
+
+  <!-- Screen 5: Quiz -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>判断场景</h3>
+      <div class="quiz" data-quiz-type="scenario">
+        <p class="quiz-prompt">你的 CTO 提议："我们的 AI 客服产品需要自己的 agent harness——从头搭建一套 CLI 工具链 + 上下文管理 + 多 agent 编排系统。"你们是一个 8 人团队，客户只有 3 个。用本期框架判断：现在该不该自建 harness？</p>
+        <div class="quiz-options" data-correct="1">
+          <button class="quiz-option" data-value="0">A. 应该——差异化就在 harness 层，越早建越好</button>
+          <button class="quiz-option" data-value="1">B. 不应该——先用 Cloud Managed Agents 或开源方案验证 PMF，harness 是规模化阶段的事</button>
+          <button class="quiz-option" data-value="0">C. 应该——但只建第一层（工具），不用做上下文和编排</button>
+          <button class="quiz-option" data-value="0">D. 换更强的模型就能解决，不需要 harness</button>
+        </div>
+        <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>8人团队 + 3个客户 = PMF 阶段。新路的判断是：模型和上下文优先级更高，但那是"技术上"。商业上，你没有资源去跟 Cloud/AWS 竞争 harness 层。先用现成的，等你有100个客户、确实遇到了托管方案解决不了的问题时，再考虑自建。早期产品的差异化应该来自场景理解，不是基础设施。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

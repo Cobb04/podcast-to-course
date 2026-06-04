@@ -1,0 +1,89 @@
+<section class="module" id="module-3">
+  <!-- Screen 1 -->
+  <div class="screen">
+    <div class="screen-content">
+      <span class="module-label">Module 3</span>
+      <h2>反直觉时刻：你以为的"最佳实践"可能是错的</h2>
+      <p class="lead">这期最有价值的部分，是新路说了好几个<strong>"你很可能以为 X，但其实 Y"</strong>的判断。</p>
+    </div>
+  </div>
+
+  <!-- Screen 2: CLI > MCP -->
+  <div class="screen">
+    <div class="screen-content">
+      <aside class="screen-annotation"><strong>🔑 产品判断</strong>这不是技术偏好，是数据分布问题。模型见过几十亿次 Unix 命令，MCP 不到 0.1%。工具选型优先级：CLI > REST API > 自定义协议。</aside>
+      <h3>反直觉 #1：CLI 比 MCP 好，不是因为设计，是因为训练语料</h3>
+      <div class="quote-translation" data-type="insight-pair">
+        <div class="quote-left">
+          <span class="quote-speaker">新路</span>
+          <blockquote>"Unix 这个东西 1971 年就出现了。但 MCP 是最近两年才提出的新协议。Unix 命令在预训练的时候出现可能有几十亿条，MCP 的语料占比可能都不到 0.1%。也许我们今天不应该再造更多的轮子，我们就回到 Unix 自洽的哲学中。"</blockquote>
+        </div>
+        <div class="insight-right">
+          <span class="insight-label">🔑 可操作洞见</span>
+          <p>这不是"CLI 比 MCP 设计得好"——是<strong>模型对 CLI 有"肌肉记忆"</strong>。给 agent 配工具时，优先选择它预训练时已经见过无数次的东西。</p>
+          <p class="insight-trigger"><strong>何时使用：</strong>每次选工具接口时问——"模型见过这个格式多少次？"CLI > REST API > 自定义协议。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 3: Best context management is no management -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>反直觉 #2：最好的上下文管理是"不要管理"</h3>
+      <div class="quote-translation" data-type="insight-pair">
+        <div class="quote-left">
+          <span class="quote-speaker">新路</span>
+          <blockquote>"最好的管理，不要做管理。因为你做管理真的会导致 KV cache 失效——它要重新算一遍。随意修改 system prompt、随意裁剪历史——你以为在省钱，其实在浪费。"</blockquote>
+        </div>
+        <div class="insight-right">
+          <span class="insight-label">🔑 可操作洞见</span>
+          <p>每次手动裁剪上下文 → prompt caching 失效 → 整个 KV cache 重新计算 → 延迟和成本反而更高。</p>
+          <p class="insight-trigger"><strong>何时使用：</strong>检查你的 agent 产品是否有"自动截断历史"或"动态修改 system prompt"的逻辑。如果有，用 A/B 测试验证它们真的省钱。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 4: PM's job has changed -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>反直觉 #3：AI 时代的产品经理，不是在画 UX/UI</h3>
+      <div class="quote-translation" data-type="insight-pair">
+        <div class="quote-left">
+          <span class="quote-speaker">新路</span>
+          <blockquote>"今天的产品经理跟过去的产品经理指的不是同一种产品经理。今天是在技术变化周期内，我们做的一切产品都是在吃这个技术周期变化的红利。你不了解技术周期变化的内核和本质，你很难构建一个贴合这个变化的产品。"</blockquote>
+        </div>
+        <div class="insight-right">
+          <span class="insight-label">🔑 可操作洞见</span>
+          <p>以前 PM 的核心是理解用户需求。现在你必须同时理解<strong>技术周期的底层变化</strong>——模型能做什么、不能做什么、下一步会怎么进化。</p>
+          <p class="insight-trigger"><strong>何时使用：</strong>下次产品评审时，问自己：这个决策是基于"用户需要什么"——还是也基于"技术周期在这个时间点能支撑什么"？</p>
+        </div>
+      </div>
+      <div class="callout-insight">
+        <div class="callout-icon">🔴</div>
+        <div class="callout-text">
+          <strong>可信度：</strong>这个观点是新路的个人判断（🔴），不是数据支撑的结论。但值得思考——尤其是在你做 AI 产品的过程中，是否发现自己越来越需要理解技术细节。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen 5: Quiz -->
+  <div class="screen">
+    <div class="screen-content">
+      <h3>场景判断</h3>
+      <div class="quiz" data-quiz-type="scenario">
+        <p class="quiz-prompt">你的工程师团队用了很多 MCP 插件来扩展 agent 能力。但任务完成率一直不理想。你建议他们试试把所有 MCP 工具替换成对应的 CLI 版本（比如用 `gh` CLI 替代 GitHub MCP）。工程师说"MCP 协议更现代化、更标准化"。你怎么回应？</p>
+        <div class="quiz-options" data-correct="2">
+          <button class="quiz-option" data-value="0">A. 同意工程师——MCP 是 Anthropic 推的，肯定是更好的方案</button>
+          <button class="quiz-option" data-value="1">B. 让工程师自己决定，PM 不干预技术选型</button>
+          <button class="quiz-option" data-value="2">C. 坚持做 A/B 测试——用数据说话，对比 CLI vs MCP 的任务成功率</button>
+          <button class="quiz-option" data-value="0">D. 把 MCP 和 CLI 都装上，给 agent 更多选择</button>
+        </div>
+        <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>新路的判断是 CLI 比 MCP 好，但这不是一个需要"信仰"的问题——做 A/B 测试，用你实际的任务成功率来判断。关键是不要默认"新协议更好"。模型见过的 CLI 命令比 MCP 多几个数量级——这个事实值得你用数据去验证。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

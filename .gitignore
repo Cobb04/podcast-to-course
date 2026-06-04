@@ -1,0 +1,10 @@
+.DS_Store
+.claude/
+
+# Build artifacts in episode dirs (these are copied from references/)
+ai-judgment-kb/episodes/*/index.html
+ai-judgment-kb/episodes/*/.index-tmp.html
+ai-judgment-kb/episodes/*/styles.css
+ai-judgment-kb/episodes/*/main.js
+ai-judgment-kb/episodes/*/build.sh
+ai-judgment-kb/episodes/*/build-self-contained.sh
