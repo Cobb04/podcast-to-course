@@ -1,5 +1,7 @@
 # Podcast to Course
 
+[English](README.md) | [中文](README_CN.md)
+
 A Claude Code skill that turns any podcast transcript into reusable AI judgment assets — so the insights stick, compound, and actually change how you make product decisions.
 
 Send it a transcript. Get back structured framework cards, decision checklists, interview talking points, a personal growth log — and for landmark episodes, a beautiful interactive HTML course.
