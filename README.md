@@ -1,114 +1,116 @@
-# Podcast to Course
+# Podcast to Course（播客变课程）
 
-[English](README.md) | [中文](README_CN.md)
+[English](README_CN.md) | [中文](README.md)
 
-A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
+**听完播客后，知识像尿一样流走了吗？用我们这个skill，让播客知识化身湿气💩，粘在我们的脑子上。**
 
-Send it a transcript. Get back structured framework cards, decision checklists, interview talking points, a personal growth log — and for landmark episodes, a beautiful interactive HTML course.
+一个 Agent 技能——把任何播客转写文件变成**可复用的 AI 产品经理课程**，让洞见不再听完就忘，而是持续沉淀、复利增长，真正改变你做产品决策的方式。
 
-## Who is this for?
+给它一份转写文件（通义听悟免费10h 我靠求打钱），它产出结构化框架卡、决策清单、面试表达素材、个人成长日志——对于里程碑级别的单集，还能生成一个漂亮的交互式 HTML 课程。
 
-**Builders, PMs, and founders** who consume a high volume of AI/Agent/AI-product podcasts but struggle to retain and apply what they learn.
+## 谁需要这个？
 
-You listen during commutes, workouts, or chores. The insights feel profound in the moment — but evaporate within days. You have no system to capture, organize, and operationalize what you hear.
+**AI产品实习生/想找到AI产品实习的同学/传统产品想转AI产品/创业者/Builder**——你听了大量 AI/Agent/AI 产品播客，但听完就忘，无法系统化，更无法应用到实际工作中。
 
-**Your goals are practical, not academic:**
-- Extract reusable mental models from conversations and apply them to your own product/business decisions
-- Build product intuition — know which AI patterns to adopt and which to ignore
-- Make faster, better calls by internalizing how experienced builders think about tradeoffs
-- Speak with confidence in meetings, interviews, and presentations — with structured frameworks at your fingertips
-- Connect insights across episodes — see how Episode 7 builds on Episodes 2 and 5
+你在通勤、健身、做家务时听播客。听到某个洞见时觉得醍醐灌顶——但几天后就忘了。你没有一套系统来捕获、整理、内化你听到的东西。
 
-You're not trying to become a researcher. You want the podcast's wisdom translated into tools you can use tomorrow morning.
+**你的目标是实用，不是学术：**
+- 从对话中提取可复用的思维模型，应用到自己的产品/商业决策中
+- 建立产品直觉——知道哪些 AI 模式该跟，哪些该忽略
+- 通过内化资深 builder 的 tradeoff 思维，做出更快更好的判断
+- 在开会、面试、汇报时有结构化框架脱口而出
+- 把不同单集的洞见串联起来——看到第 7 期如何在第 2 期和第 5 期的基础上延伸
 
-## Three output tiers
+你不是要成为研究员。你要的是把播客里的智慧转化成明天早上就能用的工具。
 
-### Tier 1: 10-Minute Learning Card (Lightweight)
+## 三种输出深度模式！
 
-A single markdown file scannable in 10 minutes: core question + 3 core judgments + 3 counter-intuitive insights + 1 reusable framework + 5 action suggestions + 1 self-test question.
+### 模式 1：10 分钟学习卡（超模轻食版）
 
-For daily post-listen review.
+一个 markdown 文件，10 分钟扫完：核心问题 + 3 个核心判断 + 3 个反直觉洞见 + 1 个可复用框架 + 5 条行动建议 + 1 道自测题。
 
-### Tier 2: Study Notes + Framework Cards (Standard, Default)
+适合日常听完快速复盘。
 
-A set of markdown assets you can drop into Notion or Obsidian:
-- `summary.md` — structured overview with logic map
-- `framework-card.md` — named framework with decision rules and boundary conditions
-- `decision-checklist.md` — when-to-do-what derived from the episode
-- `interview-answer-bank.md` — 30s/60s responses for interviews and presentations
-- `growth-log.md` — before/after snapshot of your AI worldview
-- `knowledge-entry.md` — cross-episode connections and credibility summary
+### 模式 2：学习笔记 + 框架卡（标准版，默认大碗）
 
-For learners who want to deposit knowledge into a personal knowledge base.
+一组可拖入 Notion、Obsidian 的 markdown 资产：
+- `summary.md` — 结构化摘要 + 逻辑地图
+- `framework-card.md` — 命名框架 + 决策规则 + 边界条件
+- `decision-checklist.md` — 从本期提炼的"何时做什么"清单
+- `interview-answer-bank.md` — 面试/汇报用 30 秒/60 秒回答模板
+- `growth-log.md` — 你的 AI 世界观"前后对比"快照
+- `knowledge-entry.md` — 跨集连接 + 可信度汇总
 
-### Tier 3: Interactive HTML Course (Deep)
+适合希望沉淀到个人知识库的深度学习者。
 
-A self-contained, zero-dependency HTML file — double-click to open. For landmark episodes you'll reference for months: Karpathy, OpenAI, product-lead interviews.
+### 模式 3：交互式 HTML 课程（超级碗）
 
-- **Original Words ↔ Actionable Insight translations** — verbatim quote on the left, actionable takeaway on the right
-- **Framework step-reveal** — click to reveal each layer of a decision framework
-- **Scenario-based quizzes** — not "what did the guest say?" but "you encounter X, using this episode's framework, what's your call?"
-- **Conversation flow animations** — iMessage-style exchanges dramatizing key debates
-- **Credibility badges** — every claim tagged 🟢 data / 🟡 experience / 🔴 speculation
-- **Knowledge base persistence** — each processed episode updates your master index, linking to previous episodes
+一个零依赖、双击即开的单文件 HTML。面向 Karpathy、OpenAI、产品负责人访谈这种你会反复参考的里程碑级单集。
 
-## Three operating modes
+- **原话 ↔ 可操作洞见对照** — 左边嘉宾原话，右边提炼成可以立刻用的判断
+- **框架逐层展开** — 点击按钮一步步展开决策框架的每一层
+- **场景判断测验** — 不是"嘉宾说了什么"，而是"你遇到 X 情况，用本期框架怎么判断"
+- **对话流动画** — iMessage 风格呈现播客中的观点交锋
+- **可信度标签** — 每个观点标注 🟢 数据支撑 / 🟡 经验支撑 / 🔴 推测
+- **知识库持久化** — 每处理一期自动更新总索引，标记与往期的关联
 
-| Mode | What you send | What you get |
+## 三种使用模式
+
+| 模式 | 你给什么 | 你得到什么 |
 |---|---|---|
-| `/podcast-preview` | Title + guest name | Listen-worthiness score (1–10) + 3 pre-listen questions + what to skip |
-| `/podcast-course` | Full transcript | Tier 1 / 2 / 3 output |
-| `/podcast-review` | Your own listening notes | Bias check + gap fill + framework refinement |
+| `/podcast-preview` | 标题 + 嘉宾名 | 值不值得听（1-10 分）+ 3 个带着听的问题 + 可跳过部分 |
+| `/podcast-course` | 完整转写文件 | Tier 1/2/3 输出 |
+| `/podcast-review` | 你自己的听后感 | 偏差检查 + 遗漏补充 + 框架精炼 |
 
-## Supported input formats
+## 支持的输入格式
 
-通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts manual transcription · Any STT-transcribed audio · Your own notes
+通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts 手动转写 · 任意 STT 工具转写 · 你自己的笔记
 
-## Design philosophy
+## 设计哲学
 
-### Judgment extraction, not summarization
+### 提炼判断力，不做摘要
 
-A summary tells you what was said. Judgment extraction tells you **when to use it, when not to use it, and how strongly to believe it**. Every claim carries a credibility badge. Every framework has boundary conditions. Empty praise like "这期很有启发" is banned — if the output works for any episode on the same topic, it's a summary, not an extraction.
+摘要告诉你"说了什么"。判断提炼告诉你**什么时候用、什么时候不用、该信几分**。每个观点带可信度标签。每个框架有边界条件。"这期很有启发"这种空话被明确禁止——如果一段输出能套在同类话题的任何一期上，那是摘要，不是提炼。
 
-### Application over memorization
+### 考应用，不考记忆
 
-Every quiz places you in a realistic scenario. "Your CTO proposes a multi-agent architecture. Using the framework from this episode, what's your first question?" — not "What did the guest say about multi-agent?"
+每道测验都把你放在真实场景里。"你的 CTO 提了一个 multi-agent 方案。用本期框架，你的第一反应应该是什么？"——而不是"嘉宾关于 multi-agent 说了什么？"
 
-### Knowledge that compounds
+### 知识复利
 
-Each episode updates your personal AI judgment library. `knowledge-entry.md` connects new insights to previous episodes — marking whether they reinforce, contradict, or extend existing frameworks. After 20 episodes, you have ~15 sharp framework cards, not 60 duplicate ones.
+每期更新你的个人 AI 判断库。`knowledge-entry.md` 把新洞见和往期连接——标记是强化、矛盾、还是延伸。20 期之后，你有大约 15 张精炼过的框架卡，而不是 60 张重复的。
 
-### Honest calibration
+### 诚实校准
 
-The most dangerous thing in AI podcasts is confident-sounding claims backed by nothing. Every insight gets an evidence tag. When a speaker hedges, the output preserves that uncertainty. When an episode has no strong framework, the output says so — rather than inventing one that sounds plausible.
+AI 播客最危险的是"听起来很对但毫无依据"的判断。每条洞察标注证据来源。嘉宾犹豫的地方，输出保留那种不确定性。遇到没有清晰框架的单集，输出直接说"本期框架密度低"——而不是硬编一个看起来像样子的模型。
 
-### Portable by design
+### 可移植
 
-Markdown goes everywhere. HTML is self-contained. No platform lock-in. Your judgment library lives where your thinking already lives.
+Markdown 哪里都能用。HTML 零依赖自包含。不绑定任何平台。你的判断库跟着你的思考走。
 
-## Install
+## 安装
 
 ```bash
 git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podcast-to-course
 ```
 
-Then say in Claude Code: *"Turn this podcast transcript into a course"*
+然后在 Claude Code 里说：*"帮我把这期播客转成课程"*
 
-## Skill structure
+## 技能文件结构
 
 ```
 podcast-to-course/
-├── SKILL.md                          # Main skill instructions
+├── SKILL.md                          # 主技能指令
 ├── README.md
-├── README_CN.md                      # Chinese version
+├── README_CN.md                      # 中文版说明
 └── references/
-    ├── build-self-contained.sh       # Universal build pipeline
-    ├── podcast-engine.js             # Interactive engine (quiz, framework viz, nav)
-    ├── podcast-styles.css            # Podcast-specific CSS
-    ├── gotchas.md                    # Failure points checklist
-    └── interactive-elements.md       # Quiz, framework, annotation patterns
+    ├── build-self-contained.sh       # 通用构建管线
+    ├── podcast-engine.js             # 交互引擎（测验、框架展开、导航）
+    ├── podcast-styles.css            # 播客专用样式
+    ├── gotchas.md                    # 常见踩坑清单
+    └── interactive-elements.md       # 测验、框架、注释等交互模式
 ```
 
 ---
 
-Built with Claude Code. Based on the [codebase-to-course](https://github.com/zarazhangrui/codebase-to-course) skill by [Zara](https://x.com/zarazhangrui).
+用 Claude Code 构建。基于 [codebase-to-course](https://github.com/zarazhangrui/codebase-to-course) 技能，由 [Zara](https://x.com/zarazhangrui) 原创。
