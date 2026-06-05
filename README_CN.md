@@ -1,4 +1,4 @@
-# Podcast to Course（播客转课程）
+# Podcast to Course（播客变课程）
 
 [English](README.md) | [中文](README_CN.md)
 **听完播客后，知识像尿一样流走了吗？用我们这个skill，让播客知识化身湿气💩，粘在我们的脑子上。**
