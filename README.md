@@ -96,19 +96,13 @@ Markdown goes everywhere. HTML is self-contained. No platform lock-in. Your judg
 podcast-to-course/
 ├── SKILL.md                          # Main skill instructions
 ├── README.md
-├── references/
-│   ├── build-self-contained.sh       # Universal build pipeline
-│   ├── podcast-engine.js             # Interactive JS (quiz, framework viz, nav)
-│   ├── podcast-styles.css            # Podcast-specific CSS
-│   ├── gotchas.md                    # Failure points checklist
-│   └── interactive-elements.md       # Quiz, framework, annotation patterns
-└── ai-judgment-kb/                   # Example output (2 episodes)
+└── references/
+    ├── build-self-contained.sh       # Universal build pipeline
+    ├── podcast-engine.js             # Interactive JS (quiz, framework viz, nav)
+    ├── podcast-styles.css            # Podcast-specific CSS
+    ├── gotchas.md                    # Failure points checklist
+    └── interactive-elements.md       # Quiz, framework, annotation patterns
 ```
-
-## Example episodes in this repo
-
-1. **[Agent Harness 深度拆解](ai-judgment-kb/episodes/2026-06-04-agent-harness-explained/)** — Harness 三层架构 + 双自洽标准（新路 / CRAI 创始人）
-2. **[AI 创业真实复盘](ai-judgment-kb/episodes/2026-06-04-ai-startup-reality/)** — 垂直 Agent 死亡螺旋 + Gym vs Whale 模型（梦奇 / in vocal 创始人）
 
 ---
 
