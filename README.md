@@ -1,4 +1,4 @@
-# Podcast to Course（播客变课程）
+# Podcast to Course
 
 [English](README_CN.md) | [中文](README.md)
 
