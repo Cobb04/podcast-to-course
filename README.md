@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README_CN.md)
 
-A Claude Code skill that turns any podcast transcript into reusable AI judgment assets — so the insights stick, compound, and actually change how you make product decisions.
+A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
 
 Send it a transcript. Get back structured framework cards, decision checklists, interview talking points, a personal growth log — and for landmark episodes, a beautiful interactive HTML course.
 
@@ -13,60 +13,54 @@ Send it a transcript. Get back structured framework cards, decision checklists, 
 You listen during commutes, workouts, or chores. The insights feel profound in the moment — but evaporate within days. You have no system to capture, organize, and operationalize what you hear.
 
 **Your goals are practical, not academic:**
-- Extract reusable mental models from conversations and apply them to your own product decisions
+- Extract reusable mental models from conversations and apply them to your own product/business decisions
 - Build product intuition — know which AI patterns to adopt and which to ignore
 - Make faster, better calls by internalizing how experienced builders think about tradeoffs
-- Speak with confidence in meetings, interviews, and presentations
+- Speak with confidence in meetings, interviews, and presentations — with structured frameworks at your fingertips
 - Connect insights across episodes — see how Episode 7 builds on Episodes 2 and 5
 
 You're not trying to become a researcher. You want the podcast's wisdom translated into tools you can use tomorrow morning.
 
-## What the output looks like
+## Three output tiers
 
-The skill produces **three tiers** of output, from lightweight to deep:
+### Tier 1: 10-Minute Learning Card (Lightweight)
 
-### Tier 1: 10-Minute Learning Card
-A single markdown file scannable in 10 minutes: core question, 3 judgments, 3 counter-intuitive insights, 1 framework, 5 actions.
+A single markdown file scannable in 10 minutes: core question + 3 core judgments + 3 counter-intuitive insights + 1 reusable framework + 5 action suggestions + 1 self-test question.
 
-### Tier 2: Study Notes + Framework Cards (Default)
-A portable knowledge base directory — drag into Notion, Obsidian, or any markdown editor:
+For daily post-listen review.
+
+### Tier 2: Study Notes + Framework Cards (Standard, Default)
+
+A set of markdown assets you can drop into Notion or Obsidian:
 - `summary.md` — structured overview with logic map
 - `framework-card.md` — named framework with decision rules and boundary conditions
 - `decision-checklist.md` — when-to-do-what derived from the episode
-- `interview-answer-bank.md` — 30s/60s responses with key terms to drop
+- `interview-answer-bank.md` — 30s/60s responses for interviews and presentations
 - `growth-log.md` — before/after snapshot of your AI worldview
 - `knowledge-entry.md` — cross-episode connections and credibility summary
 
-### Tier 3: Interactive HTML Course (for landmark episodes)
-A self-contained, zero-dependency HTML file that opens in any browser:
+For learners who want to deposit knowledge into a personal knowledge base.
 
-- **Original Words ↔ Actionable Insight translations** — speaker's verbatim quote on the left, actionable takeaway on the right
-- **Framework visualizations** — click to reveal each layer of a decision framework step by step
-- **Scenario-based quizzes** — not "what did the guest say?" but "you encounter X situation, using this episode's framework, what's your call?"
-- **Conversation flow animations** — iMessage-style exchanges dramatizing key debates from the episode
+### Tier 3: Interactive HTML Course (Deep)
+
+A self-contained, zero-dependency HTML file — double-click to open. For landmark episodes you'll reference for months: Karpathy, OpenAI, product-lead interviews.
+
+- **Original Words ↔ Actionable Insight translations** — verbatim quote on the left, actionable takeaway on the right
+- **Framework step-reveal** — click to reveal each layer of a decision framework
+- **Scenario-based quizzes** — not "what did the guest say?" but "you encounter X, using this episode's framework, what's your call?"
+- **Conversation flow animations** — iMessage-style exchanges dramatizing key debates
 - **Credibility badges** — every claim tagged 🟢 data / 🟡 experience / 🔴 speculation
-- **Side annotations** — pull-out insights on key screens without breaking document flow
-- **Knowledge base persistence** — each processed episode updates your master index and cross-references previous episodes
+- **Knowledge base persistence** — each processed episode updates your master index, linking to previous episodes
 
-## How to use
-
-### As a Claude Code skill
-
-```bash
-git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podcast-to-course
-```
-
-Then open any project in Claude Code and say: *"Turn this podcast transcript into a course"*
-
-### Three modes
+## Three operating modes
 
 | Mode | What you send | What you get |
 |---|---|---|
-| `/podcast-preview` | Title + guest name | Listen-worthiness score, 3 pre-listen questions, what to skip |
-| `/podcast-course` | Full transcript | Tier 1/2/3 output |
-| `/podcast-review` | Your own listening notes | Bias check, gap fill, framework refinement |
+| `/podcast-preview` | Title + guest name | Listen-worthiness score (1–10) + 3 pre-listen questions + what to skip |
+| `/podcast-course` | Full transcript | Tier 1 / 2 / 3 output |
+| `/podcast-review` | Your own listening notes | Bias check + gap fill + framework refinement |
 
-### Supported input formats
+## Supported input formats
 
 通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts manual transcription · Any STT-transcribed audio · Your own notes
 
@@ -80,9 +74,9 @@ A summary tells you what was said. Judgment extraction tells you **when to use i
 
 Every quiz places you in a realistic scenario. "Your CTO proposes a multi-agent architecture. Using the framework from this episode, what's your first question?" — not "What did the guest say about multi-agent?"
 
-### Your knowledge compounds
+### Knowledge that compounds
 
-Each episode updates your personal AI judgment library. The `knowledge-entry.md` connects new insights to previous episodes — marking whether they reinforce, contradict, or extend existing frameworks. After 20 episodes, you have ~15 sharp framework cards, not 60 duplicate ones.
+Each episode updates your personal AI judgment library. `knowledge-entry.md` connects new insights to previous episodes — marking whether they reinforce, contradict, or extend existing frameworks. After 20 episodes, you have ~15 sharp framework cards, not 60 duplicate ones.
 
 ### Honest calibration
 
@@ -92,15 +86,24 @@ The most dangerous thing in AI podcasts is confident-sounding claims backed by n
 
 Markdown goes everywhere. HTML is self-contained. No platform lock-in. Your judgment library lives where your thinking already lives.
 
+## Install
+
+```bash
+git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podcast-to-course
+```
+
+Then say in Claude Code: *"Turn this podcast transcript into a course"*
+
 ## Skill structure
 
 ```
 podcast-to-course/
 ├── SKILL.md                          # Main skill instructions
 ├── README.md
+├── README_CN.md                      # Chinese version
 └── references/
     ├── build-self-contained.sh       # Universal build pipeline
-    ├── podcast-engine.js             # Interactive JS (quiz, framework viz, nav)
+    ├── podcast-engine.js             # Interactive engine (quiz, framework viz, nav)
     ├── podcast-styles.css            # Podcast-specific CSS
     ├── gotchas.md                    # Failure points checklist
     └── interactive-elements.md       # Quiz, framework, annotation patterns
