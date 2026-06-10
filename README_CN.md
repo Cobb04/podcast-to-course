@@ -32,10 +32,14 @@ For daily post-listen review.
 ### Tier 2: Study Notes + Framework Cards (Standard, Default)
 
 A set of markdown assets you can drop into Notion or Obsidian:
+- `EPISODE-HOME.md` — the single episode entry point: learn, verify, apply, challenge
 - `summary.md` — structured overview with logic map
 - `framework-card.md` — named framework with decision rules and boundary conditions
 - `decision-checklist.md` — when-to-do-what derived from the episode
 - `interview-answer-bank.md` — 30s/60s responses for interviews and presentations
+- `claim-ledger.md` — claim-level timestamps, source anchors, evidence, and status
+- `debate-arena.md` — AI-vs-guest debate arena; challenges high-impact claims and uses web search when needed
+- `wiki-change-report.md` — what this episode created, updated, contradicted, and left open
 - `growth-log.md` — before/after snapshot of your AI worldview
 - `knowledge-entry.md` — cross-episode connections and credibility summary
 
@@ -50,6 +54,7 @@ A self-contained, zero-dependency HTML file — double-click to open. For landma
 - **Scenario-based quizzes** — not "what did the guest say?" but "you encounter X, using this episode's framework, what's your call?"
 - **Conversation flow animations** — iMessage-style exchanges dramatizing key debates
 - **Credibility badges** — every claim tagged 🟢 data / 🟡 experience / 🔴 speculation
+- **Learning loop** — pre-test, application exercise, and 24-hour review card
 - **Knowledge base persistence** — each processed episode updates your master index, linking to previous episodes
 
 ## Three operating modes
@@ -78,6 +83,18 @@ Every quiz places you in a realistic scenario. "Your CTO proposes a multi-agent 
 
 Each episode updates your personal AI judgment library. `knowledge-entry.md` connects new insights to previous episodes — marking whether they reinforce, contradict, or extend existing frameworks. After 20 episodes, you have ~15 sharp framework cards, not 60 duplicate ones.
 
+### Wiki contamination defense
+
+Podcast speech is not a fact source. It is a claim source. High-impact claims go through `claim-ledger.md` and `debate-arena.md`: quote the guest, challenge the logic, inspect sample bias, check causal overreach, compare against the existing wiki, and use web search for time-sensitive facts like product status, market data, model capability, research claims, and regulations.
+
+Each core claim carries a status:
+
+```text
+accepted / tentative / challenged / disputed / outdated / rejected
+```
+
+Only anchored, status-tagged, and challenged judgments enter the long-term wiki.
+
 ### Honest calibration
 
 The most dangerous thing in AI podcasts is confident-sounding claims backed by nothing. Every insight gets an evidence tag. When a speaker hedges, the output preserves that uncertainty. When an episode has no strong framework, the output says so — rather than inventing one that sounds plausible.
@@ -105,6 +122,9 @@ podcast-to-course/
     ├── build-self-contained.sh       # Universal build pipeline
     ├── podcast-engine.js             # Interactive engine (quiz, framework viz, nav)
     ├── podcast-styles.css            # Podcast-specific CSS
+    ├── debate-arena-template.md      # AI-vs-guest debate template
+    ├── claim-ledger-template.md       # Claim evidence ledger template
+    ├── episode-home-template.md       # Strong episode entry template
     ├── gotchas.md                    # Failure points checklist
     └── interactive-elements.md       # Quiz, framework, annotation patterns
 ```

@@ -34,10 +34,14 @@
 ### 模式 2：学习笔记 + 框架卡（标准版，默认大碗）
 
 一组可拖入 Notion、Obsidian 的 markdown 资产：
+- `EPISODE-HOME.md` — 单集强入口：学习、验证、应用、反驳从这里开始
 - `summary.md` — 结构化摘要 + 逻辑地图
 - `framework-card.md` — 命名框架 + 决策规则 + 边界条件
 - `decision-checklist.md` — 从本期提炼的"何时做什么"清单
 - `interview-answer-bank.md` — 面试/汇报用 30 秒/60 秒回答模板
+- `claim-ledger.md` — 每条核心 claim 的时间戳、原文锚点、可信度、状态
+- `debate-arena.md` — AI 与嘉宾辩论场：质疑高影响观点，必要时 web-search
+- `wiki-change-report.md` — 本期对知识库新增、更新、矛盾、开放问题的报告
 - `growth-log.md` — 你的 AI 世界观"前后对比"快照
 - `knowledge-entry.md` — 跨集连接 + 可信度汇总
 
@@ -52,6 +56,7 @@
 - **场景判断测验** — 不是"嘉宾说了什么"，而是"你遇到 X 情况，用本期框架怎么判断"
 - **对话流动画** — iMessage 风格呈现播客中的观点交锋
 - **可信度标签** — 每个观点标注 🟢 数据支撑 / 🟡 经验支撑 / 🔴 推测
+- **学习闭环** — pre-test、应用练习、24 小时复习卡，避免只看完不内化
 - **知识库持久化** — 每处理一期自动更新总索引，标记与往期的关联
 
 ## 三种使用模式
@@ -80,6 +85,18 @@
 
 每期更新你的个人 AI 判断库。`knowledge-entry.md` 把新洞见和往期连接——标记是强化、矛盾、还是延伸。20 期之后，你有大约 15 张精炼过的框架卡，而不是 60 张重复的。
 
+### 防止播客污染 Wiki
+
+播客发言不是事实源，而是 claim source。高影响观点必须进入 `claim-ledger.md` 和 `debate-arena.md`：先贴出嘉宾原话，再由 AI 质疑逻辑漏洞、样本偏差、因果过度归纳、与已有 wiki 的冲突；遇到产品状态、市场数据、研究结论等可能随时间变化的事实，必须 web-search。
+
+每条核心 claim 都有状态：
+
+```text
+accepted / tentative / challenged / disputed / outdated / rejected
+```
+
+只有经过锚点、证据、状态和必要质疑的判断，才能进入长期 wiki。
+
 ### 诚实校准
 
 AI 播客最危险的是"听起来很对但毫无依据"的判断。每条洞察标注证据来源。嘉宾犹豫的地方，输出保留那种不确定性。遇到没有清晰框架的单集，输出直接说"本期框架密度低"——而不是硬编一个看起来像样子的模型。
@@ -107,6 +124,9 @@ podcast-to-course/
     ├── build-self-contained.sh       # 通用构建管线
     ├── podcast-engine.js             # 交互引擎（测验、框架展开、导航）
     ├── podcast-styles.css            # 播客专用样式
+    ├── debate-arena-template.md      # AI 与嘉宾辩论场模板
+    ├── claim-ledger-template.md       # claim 证据账本模板
+    ├── episode-home-template.md       # 单集强入口模板
     ├── gotchas.md                    # 常见踩坑清单
     └── interactive-elements.md       # 测验、框架、注释等交互模式
 ```
