@@ -34,16 +34,12 @@ For users who want to deposit knowledge into Notion, Obsidian, or a personal kno
 
 **Deliverables:**
 ```
-EPISODE-HOME.md          ← Single user-facing entry point for this episode
 episode-slug/
   summary.md              ← Structured summary (core arguments, logic map)
   framework-card.md       ← Named framework with diagram, rules, and when-to-use
   decision-checklist.md   ← When-to-do-what checklist derived from the episode
   interview-answer-bank.md ← Talking points for interviews/presentations
   terms.md                ← Glossary of domain-specific terms from this episode
-  claim-ledger.md         ← Claim-level source anchors, evidence, and status
-  debate-arena.md         ← AI-vs-guest challenges + web-search checks when needed
-  wiki-change-report.md   ← What changed in the user's KB
   growth-log.md           ← Personal AI worldview update (see Phase 5)
   knowledge-entry.md      ← Cross-episode connection entry (see Phase 5)
 ```
@@ -56,12 +52,6 @@ For Karpathy, LangChain, OpenAI, or product-lead interviews — episodes the use
 
 **Deliverables:** All Tier 2 assets plus the full interactive HTML course (directory-based build, same output format as codebase-to-course).
 
-The HTML course is the primary learning experience. Markdown lesson files are source assets, not a substitute for the course. Every Tier 3 course must include:
-- `index.html` with progress/navigation
-- `pretest.md` — diagnostic scenario before study
-- `application-exercise.md` — apply the framework to a real AI feature
-- `review-card.md` — 24-hour recall/review card
-
 **When to use:** User says "make a course," "full interactive version," "I want to really study this one," or the episode features a field-defining guest.
 
 **At the start of each session, clarify the tier if the user hasn't specified:**
@@ -71,92 +61,6 @@ The HTML course is the primary learning experience. Markdown lesson files are so
 > - **Full interactive course** — for landmark episodes you'll reference for months
 >
 > Which would you like? (Or just say "default" and I'll go with study notes.)
-
-## Mandatory Output Contract
-
-For every full transcript ingest, produce one strong entry point and one trust layer. Do not leave users with only a directory tree.
-
-Required outputs:
-
-```
-EPISODE-HOME.md
-raw/transcripts/<episode>.md
-knowledge-kernels/<episode>.md
-ai-judgment-kb/index.md
-ai-judgment-kb/log.md
-ai-judgment-kb/claim-status-policy.md
-ai-judgment-kb/framework-governance.md
-ai-judgment-kb/episodes/<episode>/summary.md
-ai-judgment-kb/episodes/<episode>/framework-card.md
-ai-judgment-kb/episodes/<episode>/decision-checklist.md
-ai-judgment-kb/episodes/<episode>/interview-answer-bank.md
-ai-judgment-kb/episodes/<episode>/terms.md
-ai-judgment-kb/episodes/<episode>/claim-ledger.md
-ai-judgment-kb/episodes/<episode>/debate-arena.md
-ai-judgment-kb/episodes/<episode>/wiki-change-report.md
-ai-judgment-kb/episodes/<episode>/growth-log.md
-ai-judgment-kb/episodes/<episode>/knowledge-entry.md
-```
-
-If Tier 3 is requested, additionally produce:
-
-```
-course/<episode>/index.html
-course/<episode>/pretest.md
-course/<episode>/application-exercise.md
-course/<episode>/review-card.md
-course/<episode>/assets/*.md
-```
-
-### `EPISODE-HOME.md`
-
-This is the user-facing map. It must answer:
-- what to open first
-- what to read if the user has 3 minutes
-- where to study the course
-- where to verify evidence
-- where to challenge the thesis
-- what changed in the wiki
-- which files can be ignored at first
-
-### Claim Status Policy
-
-Podcast claims are not facts. Every high-impact claim must carry one status:
-- `accepted` — strong enough to use as a working judgment
-- `tentative` — plausible but not fully validated
-- `challenged` — AI or external sources found a serious weakness
-- `disputed` — credible sources conflict
-- `outdated` — may no longer be current
-- `rejected` — unsupported enough to keep out of active wiki knowledge
-
-No claim can appear in a framework or course as an unqualified rule unless it has a claim ID, evidence level, status, and source anchor.
-
-### Debate Arena
-
-Every high-signal episode must include `debate-arena.md`. It is the wiki immune system: an AI-vs-guest debate that challenges claims before they become durable knowledge.
-
-Each challenged item must include:
-- challenged quote
-- timestamp/source line
-- guest claim
-- AI challenge
-- whether web search is required
-- web-search sources and search date when used
-- verdict
-- wiki action
-
-Use web search for product status, company metrics, market outcomes, research claims, model capability, legal/regulatory facts, and anything likely to change after the recording date. Do not use web search as a substitute for judgment on values, taste, or private causal interpretation.
-
-### Framework Governance
-
-Create a new framework only when it changes a decision rule. If a new episode merely restates, reinforces, or gives another example of an existing decision rule, update the existing framework instead of creating a new one.
-
-Before creating a new framework, answer:
-1. What decision can the user make differently because this framework exists?
-2. Which existing framework is closest, and why is this not a duplicate?
-3. When should the user not apply it?
-4. Which claim anchors support it?
-5. Where should future related episodes attach?
 
 ### What Good Output Looks Like (For the AI Agent)
 
@@ -647,13 +551,6 @@ Structure the course as **4–6 modules**. Same arc as codebase-to-course but re
 
 This is a **menu, not a checklist**. Pick 4–6 modules that serve the conversation.
 
-Course is not just readable lessons. It must create a learning loop:
-- **Diagnostic pre-test** before the modules
-- **Scenario quizzes** inside the course
-- **Application exercise** after the course
-- **24-hour review card** for recall
-- **Debate Arena link** so the learner sees which claims are accepted, tentative, or challenged
-
 **Each Tier 3 module should contain:**
 - 3–6 screens (sub-sections that flow within the module)
 - At least one **Original Words → Actionable Insight** translation block (see below)
@@ -716,9 +613,6 @@ course-name/
   _base.html       ← customized shell (title, accent color, nav dots)
   _footer.html     ← copied verbatim from references/_footer.html
   build.sh         ← copied verbatim from references/build.sh
-  pretest.md       ← diagnostic scenario before study
-  application-exercise.md ← apply the framework to user's work
-  review-card.md   ← 24-hour recall card
   briefs/          ← module briefs (complex episodes only)
   assets/          ← Tier 2 markdown assets (summary, framework cards, etc.)
   modules/
@@ -728,9 +622,40 @@ course-name/
   index.html       ← assembled by build.sh
 ```
 
-**Step 1: Setup** — Create the course directory. Copy four files verbatim from references: `styles.css`, `main.js`, `_footer.html`, `build.sh`.
+**Step 1: Setup** — Create the course directory. Copy six files verbatim from references:
 
-**Step 2: Customize `_base.html`** — Read `references/_base.html`, substitute `COURSE_TITLE`, `ACCENT_*` placeholders, and `NAV_DOTS`.
+| File | Purpose |
+|---|---|
+| `styles.css` | Base layout + CSS variables (shared with codebase-to-course) |
+| `podcast-styles.css` | Podcast-specific typography, quiz, quote↔insight, framework viz, chat, cards |
+| `main.js` | Base interactive JS |
+| `podcast-engine.js` | Podcast-specific JS: quiz engine, framework viz walkthrough, chat stagger, nav |
+| `_footer.html` | Footer template |
+| `build.sh` | Assembly script |
+
+**Step 2: Customize `_base.html`** — Read `references/_base.html`, substitute `COURSE_TITLE`, `ACCENT_*` placeholders, and `NAV_DOTS`. Link both `podcast-styles.css` and `podcast-engine.js` in the `<head>` (alongside or replacing the base files as appropriate).
+
+**Step 2.5: Read the CSS contract BEFORE writing any HTML (MANDATORY)** — Read `podcast-styles.css` (and `supplement.css` if it already exists). Understand the exact class names available. Every CSS class you use in module HTML MUST exist in one of the loaded stylesheets. **Never invent class names from scratch.** Key DOM contracts to memorize:
+
+| Component | CSS class | JS contract |
+|---|---|---|
+| Module wrapper | `.module` | `id="module-N"` `data-module="N"` |
+| Module label | `.module-label` | — |
+| Screen | `.screen` > `.screen-content` | — |
+| Lead paragraph | `p.lead` | — |
+| Pattern cards | `.pattern-cards` > `.pattern-card` > `.pattern-icon` | — |
+| Quote↔Insight block | `.quote-translation` > `.quote-left` / `.insight-right` | `.quote-speaker`, `.insight-label`, `.insight-trigger` |
+| Callout box | `.callout-insight` | `.callout-icon` |
+| Quiz | `.quiz` > `.quiz-prompt` + `.quiz-options[data-correct="N"]` + `.quiz-feedback` > `.quiz-feedback-text[hidden]` | engine reads `data-correct`, one `.quiz` per question |
+| Framework viz | `.framework-visualization` > `.fw-layer` (×N) + `button.fw-btn` | engine reveals layers one by one |
+| Chat group | `.chat-group` > `.chat-message.chat-left/.chat-right` > `.chat-sender` + `p` | engine staggers animation |
+| Credibility badge | `.credibility-badge` | — |
+| Screen annotation | `.screen-annotation` | — |
+| Growth log | `.growth-log-card` | — |
+| Insight table | `table.insight-table` | — |
+| Action list | `.action-list` > `.action-item` > `.action-num` + `.action-body` | — |
+
+If a visual component you need has no matching CSS class, write a `supplement.css` with only the new classes — don't silently invent names that won't be styled.
 
 **Step 3: Write modules** — Sequential or parallel path (same as codebase-to-course).
 
@@ -738,15 +663,15 @@ course-name/
 
 **Step 5: Copy Tier 2 assets** — Include all Tier 2 markdown files in an `assets/` subdirectory so the course directory is self-contained.
 
-**Step 6: Add learning loop assets** — Write `pretest.md`, `application-exercise.md`, and `review-card.md`. Link them from the final course module and `EPISODE-HOME.md`.
-
 **Critical rules (Tier 3 only):**
-- **Never regenerate** `styles.css` or `main.js` — always copy from references
+- **Never regenerate** `styles.css`, `podcast-styles.css`, `main.js`, or `podcast-engine.js` — always copy from references
+- **Never invent CSS class names** — every class used in HTML must exist in `podcast-styles.css`, `styles.css`, or `supplement.css`. If you need a class that doesn't exist, add it to `supplement.css` first
 - Module files contain only `<section>` content — no boilerplate
 - Use CSS `scroll-snap-type: y proximity` (NOT `mandatory`)
 - Use `min-height: 100dvh` with `100vh` fallback on `.module`
-- Interactive element JS is in `main.js`; wire up via `data-*` attributes
-- Chat containers need `id` attributes; flow animations need `data-steps='[...]'`
+- Interactive element JS is in `podcast-engine.js`; wire up via `data-*` attributes
+- Each `.quiz` div contains exactly ONE question (one `.quiz-options` + one `.quiz-feedback`)
+- Chat containers use `.chat-group`; flow animations use `data-steps='[...]'`
 
 ### Phase 4: Review
 
@@ -755,15 +680,6 @@ For all tiers: review the output for accuracy against the transcript, consistenc
 ### Phase 5: Knowledge Base Update & Growth Log
 
 This phase runs for **all tiers** — it's what makes this a learning system, not just a course generator.
-
-Phase 5 has six mandatory outputs:
-
-1. `claim-ledger.md` — claim-level source anchors, evidence level, and status
-2. `debate-arena.md` — AI-vs-guest challenge layer with web-search checks when needed
-3. `wiki-change-report.md` — created/updated/reinforced/contradicted/open questions
-4. `knowledge-entry.md` — cross-episode connection entry
-5. `growth-log.md` — personal judgment shift
-6. `framework-governance.md` — update or create if missing, then enforce it
 
 #### 5a. Knowledge Entry (`knowledge-entry.md`)
 
@@ -779,8 +695,6 @@ A structured entry designed to connect this episode to the user's growing knowle
    - **Extends** — same direction, adds nuance or boundary conditions. The original framework gets sharper.
    - **Unrelated** — genuinely different topic. Let it stand alone.
 4. **Avoid knowledge base bloat.** After 20 episodes, the user should have ~10–15 framework cards, not 60. Each new episode should merge into existing frameworks more often than it creates new ones. The knowledge base is a *judgment model being refined*, not a *library being filled.*
-
-**Framework admission rule:** Only create a new framework if it changes a decision rule. Otherwise, reinforce, extend, contradict, or merge into an existing framework/concept.
 
 ```markdown
 # Episode Knowledge Entry: [Episode Title]
@@ -817,84 +731,7 @@ A structured entry designed to connect this episode to the user's growing knowle
 - [ ] Flag [[contradiction]] for user attention — two credible sources disagree
 ```
 
-#### 5b. Claim Ledger (`claim-ledger.md`)
-
-Every core claim must be traceable:
-
-```markdown
-# Claim Ledger: [Episode Title]
-
-| ID | Extracted Claim | Evidence | Status | Timestamp | Source Line | Exact Anchor | What Would Upgrade Confidence |
-|---|---|---|---|---|---:|---|---|
-| C1 | [claim] | Medium | tentative | 12:34 | 88 | "[short exact anchor]" | [data/source needed] |
-```
-
-Evidence is not enough. Status controls wiki behavior:
-- `accepted`: can be used as working judgment
-- `tentative`: must carry caveat
-- `challenged`: must link to Debate Arena before reuse
-- `disputed`: show both sides
-- `outdated`: web-check before reuse
-- `rejected`: do not use in active wiki knowledge
-
-#### 5c. Debate Arena (`debate-arena.md`)
-
-Challenge high-impact claims before they enter the wiki.
-
-For each challenged claim:
-
-```markdown
-## Debate N: [Claim]
-
-### Challenged Quote
-[verbatim quote]
-
-Transcript anchor: [line/timestamp]
-
-### Guest Claim
-[what the speaker is really asserting]
-
-### AI Challenge
-[logic gap, sample bias, causal overreach, missing counterfactual, or conflict with existing KB]
-
-### Web Search Check
-[only when the claim may be time-sensitive or externally verifiable]
-
-### Verdict
-Status: [accepted/tentative/challenged/disputed/outdated/rejected]
-
-Wiki action: [keep / keep with caveat / mark disputed / reject / needs update]
-```
-
-AI can challenge stable reasoning issues without web search. Use web search for product status, company metrics, market outcomes, model capability, research claims, and legal/regulatory facts.
-
-#### 5d. Wiki Change Report (`wiki-change-report.md`)
-
-Make compounding visible:
-
-```markdown
-# Wiki Change Report: [Episode Title]
-
-## Created
-[new framework/concept/evidence pages]
-
-## Updated
-[index, logs, existing framework pages]
-
-## Reinforced
-[existing ideas strengthened]
-
-## Contradictions
-[credible conflicts]
-
-## Open Questions
-[what still needs validation]
-
-## Next Merge Targets
-[where future episodes should attach]
-```
-
-#### 5e. Personal AI Growth Log (`growth-log.md`)
+#### 5b. Personal AI Growth Log (`growth-log.md`)
 
 This is the most important artifact for long-term learning. It tracks not what the user *learned*, but how their *judgment model changed*:
 
@@ -1082,6 +919,13 @@ These four files are identical to the codebase-to-course skill. If both skills a
 - **`references/_footer.html`** — Footer template. Copy verbatim.
 - **`references/build.sh`** — Assembly script. Copy verbatim.
 
+### Podcast-specific — copy verbatim (Tier 3 build required)
+
+These two files are **required** for every Tier 3 build. They define the DOM contract that module HTML must follow. Copy alongside the four shared files in Step 1:
+
+- **`references/podcast-styles.css`** — Podcast typography (Bricolage Grotesque headings, DM Sans body, JetBrains Mono labels), quiz styling, quote↔insight translation blocks, framework visualization controls, pattern cards, chat groups, credibility badges, growth log cards, action items, screen annotations. **Read this BEFORE writing any module HTML** — every CSS class you use must exist here or in `supplement.css`.
+- **`references/podcast-engine.js`** — Quiz click handling (reads `data-correct` from `.quiz-options`, shows `.quiz-feedback-text`), framework visualization step-by-step layer reveal, chat group stagger animation, nav dot scrolling, keyboard navigation, progress bar. Includes the IIFE that wires all interactivity without manual init calls.
+
 ### Podcast-specific (requires adaptation from codebase-to-course)
 
 - **`references/content-philosophy.md`** — **Adapted.** Visual density rules, metaphor guidelines, quiz design, tooltip rules. Replace code↔English guidance with quote↔insight translation guidance. Read during Phase 2.5 (briefs) and Phase 3 (writing).
@@ -1095,9 +939,3 @@ These four files are identical to the codebase-to-course skill. If both skills a
 - **`references/_base.html`** — Same structure as codebase-to-course. Substitutes `COURSE_TITLE`, `ACCENT_*`, `NAV_DOTS`.
 - **`references/tier1-example.md`** — A complete, annotated Tier 1 learning card showing the quality bar (the example from this SKILL.md, expanded).
 - **`references/tier2-example.md`** — Complete, annotated Tier 2 assets showing the quality bar.
-- **`references/episode-home-template.md`** — Template for the single user-facing episode entry point. Read during Phase 3 or final assembly.
-- **`references/claim-ledger-template.md`** — Template for claim IDs, evidence, status, source anchors, and confidence upgrade criteria. Read during Phase 5.
-- **`references/debate-arena-template.md`** — Template for AI-vs-guest challenges and web-search checks. Read during Phase 5 before final wiki insertion.
-- **`references/wiki-change-report-template.md`** — Template for created/updated/reinforced/contradicted/open-question reporting. Read during Phase 5.
-- **`references/framework-governance-template.md`** — Template for preventing framework bloat. Read when creating or updating `ai-judgment-kb/framework-governance.md`.
-- **`references/claim-status-policy-template.md`** — Template for accepted/tentative/challenged/disputed/outdated/rejected claim statuses. Read when creating or updating `ai-judgment-kb/claim-status-policy.md`.

@@ -78,5 +78,8 @@ The #1 content failure. "What did X say?" is never acceptable. Every quiz must p
 ### Missing credibility badges
 Every claim in output needs a 🟢🟡🔴 badge. If evidence basis is unknown, default to 🔴.
 
+### Inventing CSS class names instead of reading the CSS contract
+**The #1 Tier 3 HTML failure mode.** The agent writes module HTML with class names it imagines (`.feature-cards`, `.quote-panel`, `.chat-flow`, `.duality-cards`, `.comparison-table`…) — none of which exist in any loaded stylesheet. The browser renders bare, unstyled HTML with only default typography. **Fix:** Read `podcast-styles.css` BEFORE writing any module HTML. Every class must exist in `podcast-styles.css`, `styles.css`, or `supplement.css`. If you need a new visual component, add its CSS to `supplement.css` first, then use it in HTML. See the DOM contract table in SKILL.md Step 2.5.
+
 ### Skipping Phase 5 (growth log + knowledge entry)
 Phase 5 is mandatory for all tiers. Without it, this is a summarizer, not a learning system.
