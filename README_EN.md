@@ -1,6 +1,6 @@
 # Podcast to Course
 
-[English](README_CN.md) | [中文](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
 
@@ -164,7 +164,7 @@ Then say in Claude Code: *"Turn this podcast transcript into a course"*
 ```
 .
 ├── README.md                        # Chinese landing page (default)
-├── README_CN.md                     # English version
+├── README_EN.md                     # English version
 ├── requirements.txt                 # ingest-layer deps (requests, bs4, aliyun SDK)
 ├── .env.example                     # credential template (never commit real keys)
 └── podcast-to-course/

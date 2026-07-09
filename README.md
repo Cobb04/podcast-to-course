@@ -1,6 +1,6 @@
 # Podcast to Course
 
-[English](README_CN.md) | [中文](README.md)
+[English](README_EN.md) | [中文](README.md)
 
 **听完播客后，知识像尿一样流走了吗？用我们这个skill，让播客知识化身湿气💩，粘在我们的脑子上。**
 
@@ -166,7 +166,7 @@ git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podca
 ```
 .
 ├── README.md                        # 中文首页（默认）
-├── README_CN.md                     # 英文版说明
+├── README_EN.md                     # 英文版说明
 ├── requirements.txt                 # ingest 层依赖（requests、bs4、阿里云 SDK）
 ├── .env.example                     # 凭据模板（绝不提交真实密钥）
 └── podcast-to-course/
