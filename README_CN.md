@@ -69,6 +69,54 @@ A self-contained, zero-dependency HTML file — double-click to open. For landma
 
 通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts manual transcription · Any STT-transcribed audio · Your own notes
 
+## Input Modes (automated ingestion)
+
+If you don't have a transcript yet, `podcast-to-course/scripts/ingest_podcast.py` can build one for you. Three mutually-exclusive modes:
+
+**1. Transcript Mode — you already have a transcript (free, local, no API)**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --transcript path/to/transcript.md \
+  --out outputs/demo
+```
+
+**2. Xiaoyuzhou URL Mode — a public 小宇宙 episode link**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --url "https://www.xiaoyuzhoufm.com/episode/..." \
+  --provider tingwu \
+  --out outputs/demo
+```
+
+It parses the page for the public `audio_url`, submits it to Alibaba Tingwu for ASR, and produces `transcript.md`. It does **not** download the audio itself.
+
+**3. Audio URL Mode — a public, directly-accessible audio file URL**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --provider tingwu \
+  --out outputs/demo
+```
+
+**Setup & credentials.** Python 3.10+; `pip install -r requirements.txt`. Tingwu needs your own Alibaba Cloud keys (never committed):
+
+```bash
+export ALIBABA_CLOUD_ACCESS_KEY_ID="..."
+export ALIBABA_CLOUD_ACCESS_KEY_SECRET="..."
+export TINGWU_APP_KEY="..."
+```
+
+Validate with the short official sample first: `python podcast-to-course/scripts/tingwu_smoke_test.py`.
+
+**Boundaries.**
+- Only **public, openly accessible** content. No bypassing paywalls, login, membership, encrypted, or private content.
+- Tingwu is used **only for ASR transcription** — its summary/chapter/QA features are not used as course content.
+- `--transcript` incurs **no** Tingwu cost. `--url` / `--audio-url` call a paid API and **may incur cost**.
+- Current `--provider` supports `tingwu` only. If auto-extraction fails, fall back to Transcript Mode.
+
 ## Design philosophy
 
 ### Judgment extraction, not summarization
@@ -114,19 +162,28 @@ Then say in Claude Code: *"Turn this podcast transcript into a course"*
 ## Skill structure
 
 ```
-podcast-to-course/
-├── SKILL.md                          # Main skill instructions
-├── README.md
-├── README_CN.md                      # Chinese version
-└── references/
-    ├── build-self-contained.sh       # Universal build pipeline
-    ├── podcast-engine.js             # Interactive engine (quiz, framework viz, nav)
-    ├── podcast-styles.css            # Podcast-specific CSS
-    ├── debate-arena-template.md      # AI-vs-guest debate template
-    ├── claim-ledger-template.md       # Claim evidence ledger template
-    ├── episode-home-template.md       # Strong episode entry template
-    ├── gotchas.md                    # Failure points checklist
-    └── interactive-elements.md       # Quiz, framework, annotation patterns
+.
+├── README.md                        # Chinese landing page (default)
+├── README_CN.md                     # English version
+├── requirements.txt                 # ingest-layer deps (requests, bs4, aliyun SDK)
+├── .env.example                     # credential template (never commit real keys)
+└── podcast-to-course/
+    ├── SKILL.md                      # Main skill instructions
+    ├── scripts/                      # ingest layer → produces transcript.md
+    │   ├── ingest_podcast.py         # unified CLI (url / audio-url / transcript)
+    │   ├── extract_xiaoyuzhou_audio.py
+    │   ├── tingwu_client.py          # Tingwu offline-ASR wrapper
+    │   ├── tingwu_smoke_test.py
+    │   └── normalize_transcript.py
+    └── references/
+        ├── build-self-contained.sh   # Universal build pipeline
+        ├── podcast-engine.js         # Interactive engine (quiz, framework viz, nav)
+        ├── podcast-styles.css        # Podcast-specific CSS
+        ├── debate-arena-template.md  # AI-vs-guest debate template
+        ├── claim-ledger-template.md  # Claim evidence ledger template
+        ├── episode-home-template.md  # Strong episode entry template
+        ├── gotchas.md                # Failure points checklist
+        └── interactive-elements.md   # Quiz, framework, annotation patterns
 ```
 
 ---

@@ -9,6 +9,23 @@ Transform podcast transcripts into a **reusable AI judgment asset library**. The
 
 This skill does NOT just summarize. It extracts the mental models, counter-intuitive insights, and decision frameworks that help a builder, product thinker, or founder make better AI product calls tomorrow morning.
 
+## Input Handling
+
+Every course is built from a **`transcript.md`**. Before any course generation, resolve the input into a transcript. There are three input modes, handled by `scripts/ingest_podcast.py` (see `README.md` for user-facing commands):
+
+**Routing rules:**
+- **User provides a transcript** → go straight to course generation. No ingestion needed.
+- **User provides a Xiaoyuzhou (小宇宙) public episode link** → run `ingest_podcast.py --url` first. It extracts the public `audio_url`, calls Alibaba Tingwu for transcription, and produces `transcript.md`.
+- **User provides a public audio URL** (a direct media file, not a web page) → run `ingest_podcast.py --audio-url`. It sends the URL to Tingwu and produces `transcript.md`.
+- **Automatic parsing or transcription fails** → do NOT fabricate a course from shownotes or episode descriptions. Tell the user the ingestion failed and ask them to provide a transcript directly (Transcript Mode).
+
+**Hard rules for input:**
+- All course generation MUST be based on `transcript.md`. Shownotes are auxiliary metadata only — they can enrich titles/attribution, but they can NEVER substitute for the transcript.
+- Do NOT bypass paywalls, login walls, encrypted media, or private content. Only public, openly accessible episodes are supported.
+- Do NOT claim support for arbitrary podcast platforms. Supported ingestion is: Xiaoyuzhou public episodes, public audio URLs, and existing transcripts.
+- Tingwu is used **only as an ASR transcription provider**. Do NOT use Tingwu's summarization, chapter, QA, or mind-map outputs as course content. Course generation, judgment exercises, and LLM-Wiki assets are produced by THIS skill, from the transcript.
+- The `--url` and `--audio-url` modes call a paid API (Tingwu) and may incur cost. `--transcript` mode is fully local and free. Prefer validating with the short official sample via `tingwu_smoke_test.py` before running long episodes.
+
 ## Three Output Tiers
 
 Not every episode deserves a full course. Default to the tier that matches what the user asks for — and if they don't specify, default to **Standard** and mention the other options.
@@ -302,7 +319,10 @@ When the skill is first triggered and the user hasn't provided a transcript yet,
 > - **Process a full episode** — send me the transcript, I'll extract frameworks, counter-intuitive insights, decision checklists, and scenario quizzes.
 > - **Review your own notes** — send me what you wrote down after listening, I'll help you catch blind spots and structure your thinking.
 >
+> **Automated ingestion (optional — see README):** If you don't have a transcript yet, I can build one from a **Xiaoyuzhou (小宇宙) public episode link** or a **public audio URL** via `scripts/ingest_podcast.py` (transcribed by Alibaba Tingwu). Only public, openly accessible content — no paywalled, login-gated, or private media. This calls a paid API; the transcript route below is always free.
+>
 > **Supported input formats (best → good):**
+> - Xiaoyuzhou public episode link or public audio URL (auto-transcribed via Tingwu)
 > - 通义听悟 transcript export (.txt / .md / .docx)
 > - 飞书妙记 transcript export
 > - YouTube transcript (paste or .txt)

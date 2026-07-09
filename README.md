@@ -71,6 +71,54 @@
 
 通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts 手动转写 · 任意 STT 工具转写 · 你自己的笔记
 
+## 输入模式（自动转写入口）
+
+还没有转写稿？`podcast-to-course/scripts/ingest_podcast.py` 可以帮你生成。三种互斥模式：
+
+**1. Transcript Mode — 你已有转写稿（免费、纯本地、不调 API）**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --transcript path/to/transcript.md \
+  --out outputs/demo
+```
+
+**2. Xiaoyuzhou URL Mode — 小宇宙公开单集链接**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --url "https://www.xiaoyuzhoufm.com/episode/..." \
+  --provider tingwu \
+  --out outputs/demo
+```
+
+先解析页面里的公开 `audio_url`，再提交给通义听悟做 ASR 转写，产出 `transcript.md`。**不下载音频本体**。
+
+**3. Audio URL Mode — 公网可直接访问的音频文件 URL**
+
+```bash
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --provider tingwu \
+  --out outputs/demo
+```
+
+**环境与凭据。** Python 3.10+；`pip install -r requirements.txt`。通义听悟需要你**自备**阿里云密钥（绝不提交）：
+
+```bash
+export ALIBABA_CLOUD_ACCESS_KEY_ID="..."
+export ALIBABA_CLOUD_ACCESS_KEY_SECRET="..."
+export TINGWU_APP_KEY="..."
+```
+
+建议先用官方短音频验证：`python podcast-to-course/scripts/tingwu_smoke_test.py`。
+
+**边界说明。**
+- 只支持**公开可访问**内容。不绕过登录、付费、会员、加密、私有内容。
+- 通义听悟**仅用于 ASR 转写**——其摘要/章节/问答能力不作为课程内容。
+- `--transcript` **不产生**听悟费用；`--url` / `--audio-url` 会调用付费 API，**可能产生费用**。
+- 当前 `--provider` 仅支持 `tingwu`。自动解析失败时，可回退到 Transcript Mode。
+
 ## 设计哲学
 
 ### 提炼判断力，不做摘要
@@ -116,19 +164,28 @@ git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podca
 ## 技能文件结构
 
 ```
-podcast-to-course/
-├── SKILL.md                          # 主技能指令
-├── README.md
-├── README_CN.md                      # 中文版说明
-└── references/
-    ├── build-self-contained.sh       # 通用构建管线
-    ├── podcast-engine.js             # 交互引擎（测验、框架展开、导航）
-    ├── podcast-styles.css            # 播客专用样式
-    ├── debate-arena-template.md      # AI 与嘉宾辩论场模板
-    ├── claim-ledger-template.md       # claim 证据账本模板
-    ├── episode-home-template.md       # 单集强入口模板
-    ├── gotchas.md                    # 常见踩坑清单
-    └── interactive-elements.md       # 测验、框架、注释等交互模式
+.
+├── README.md                        # 中文首页（默认）
+├── README_CN.md                     # 英文版说明
+├── requirements.txt                 # ingest 层依赖（requests、bs4、阿里云 SDK）
+├── .env.example                     # 凭据模板（绝不提交真实密钥）
+└── podcast-to-course/
+    ├── SKILL.md                      # 主技能指令
+    ├── scripts/                      # ingest 层 → 产出 transcript.md
+    │   ├── ingest_podcast.py         # 统一 CLI（url / audio-url / transcript）
+    │   ├── extract_xiaoyuzhou_audio.py
+    │   ├── tingwu_client.py          # 通义听悟离线转写封装
+    │   ├── tingwu_smoke_test.py
+    │   └── normalize_transcript.py
+    └── references/
+        ├── build-self-contained.sh   # 通用构建管线
+        ├── podcast-engine.js         # 交互引擎（测验、框架展开、导航）
+        ├── podcast-styles.css        # 播客专用样式
+        ├── debate-arena-template.md  # AI 与嘉宾辩论场模板
+        ├── claim-ledger-template.md  # claim 证据账本模板
+        ├── episode-home-template.md  # 单集强入口模板
+        ├── gotchas.md                # 常见踩坑清单
+        └── interactive-elements.md   # 测验、框架、注释等交互模式
 ```
 
 ---
