@@ -8,3 +8,29 @@ ai-judgment-kb/episodes/*/styles.css
 ai-judgment-kb/episodes/*/main.js
 ai-judgment-kb/episodes/*/build.sh
 ai-judgment-kb/episodes/*/build-self-contained.sh
+
+# --- ingest 层：敏感凭据（绝不提交）---
+.env
+.env.*
+!.env.example
+*AccessKey*.csv
+credentials.csv
+
+# --- ingest 层产物：本地生成，不入库 ---
+outputs/
+raw_transcription.json
+
+# --- 音频本体：体积大，不入库 ---
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.flac
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
