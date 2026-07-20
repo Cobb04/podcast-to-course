@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 时代的两个自己 · 判断力课程</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="podcast-styles.css">
+
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+  <script src="podcast-engine.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">AI 时代的两个自己</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <button class="nav-dot" data-target="module-1" data-tooltip="壁垒被推倒" role="tab" aria-label="Module 1: 技术壁垒被推倒"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="哆啦A梦口袋" role="tab" aria-label="Module 2: 哆啦A梦口袋模型"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="调错退回人脑" role="tab" aria-label="Module 3: 调错要退回人脑"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="品味护城河" role="tab" aria-label="Module 4: 品味护城河"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="拨开概念看本质" role="tab" aria-label="Module 5: 拨开概念看本质"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="先用起来" role="tab" aria-label="Module 6: 从焦虑到行动"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <section class="module" id="module-1" data-module="1">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 1 · 壁垒被推倒</span>
+          <h2>当写代码的门槛，被人亲手推倒之后</h2>
+          <p class="lead">核心问题：技术壁垒消失后，普通人（尤其文科生）该如何跟 AI 共生，人的独特价值又落在哪里？</p>
+          <p>你可能给自己贴过标签："我是文科生，我不懂代码，那是很难的事。" 本期有个人把这个标签撕了——一个英语文学专业、做了十多年媒体的人，<strong>零基础</strong>，用 AI coding 手搓了一个上架 App Store 的应用。</p>
+          <div class="callout-insight">
+            <span class="callout-icon">🔨</span>
+            <div>当"写代码"的技术壁垒被 web coding 推倒，问题就从"你会不会写"变成了"你能不能说清你要什么"。<span class="credibility-badge">🟢 亲历 · 王博源上架 App</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>硬币的两面</h3>
+          <div class="pattern-cards">
+            <div class="pattern-card">
+              <span class="pattern-icon">😰</span>
+              <h4>焦虑面</h4>
+              <p>AI 作为效率工具，会取代重复性劳作。信息过载让人恐慌——"我该学什么？我会不会被淘汰？"</p>
+            </div>
+            <div class="pattern-card">
+              <span class="pattern-icon">✨</span>
+              <h4>创造面</h4>
+              <p>人的主观能动性 + 品味 + 洞察，被 AI 高效执行出来。过去"想都不敢想"的东西，现在能亲手造出来。</p>
+            </div>
+          </div>
+          <div class="screen-annotation"><strong>本课主线</strong>这集不是讲"要不要用 AI"，而是讲壁垒推倒后——人的价值从执行力，迁移到了需求定义、品味和跳出框架的能力。</div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <div class="quiz">
+            <p class="quiz-prompt">你是一个非技术背景的人，一直想做个小工具但觉得"我不会写代码"。用本期的核心判断，第一步最该做什么？</p>
+            <div class="quiz-options" data-correct="B">
+              <button class="quiz-option" data-value="A">A. 先报个编程班，系统学完再说</button>
+              <button class="quiz-option" data-value="B">B. 先能不能用自然语言把"我想要什么"讲清楚，然后动手用起来</button>
+              <button class="quiz-option" data-value="C">C. 等 AI 再成熟一点，避免踩坑</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>壁垒已被推倒，稀缺的不再是"会写代码"，而是"能精准说清需求"。王博源正是把自己整理歌单的逻辑一比一讲给 AI 才起步的。焦虑 80% 来自只听不做——先用起来。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="module" id="module-2" data-module="2">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 2 · 心智模型</span>
+          <h2>你不是哆啦A梦，你是有了那个口袋的人</h2>
+          <p class="lead">核心问题：AI 是无限工具，那人在这套系统里到底扮演什么角色？</p>
+          <div class="quote-translation">
+            <div class="quote-left">
+              <span class="quote-speaker">Jason · 原话</span>
+              <blockquote>"我不是哆啦A梦，而是我现在有了一个口袋……你想要什么东西，但你不能让主角自己跑到口袋里去找，他不知道这个工具干嘛用的。所以你要<strong>有这个想法</strong>，才能让哆啦A梦帮你找到对应的工具。"</blockquote>
+            </div>
+            <div class="insight-right">
+              <span class="insight-label">可复用洞见</span>
+              <p>AI 是工具池，不会自己启动。人的稀缺价值是"精准提出痛点需求"——先有想法，工具才有意义。</p>
+              <p class="insight-trigger">何时套用：当你焦虑"AI 会不会取代我"，却还没想清自己要它解决什么问题时。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>哆啦A梦口袋模型，一层层拆开</h3>
+          <div class="framework-visualization">
+            <div class="fw-layer">
+              <h4>第一层：口袋（AI）</h4>
+              <p>无限的工具，随取随用——但它不会自己知道你要哪个。</p>
+            </div>
+            <div class="fw-layer">
+              <h4>第二层：大雄（人）</h4>
+              <p>真正稀缺的能力：精准说出"我现在的痛点是 ____"。谁最聪明？不是哆啦A梦，是能精准提需求的大雄。</p>
+            </div>
+            <div class="fw-layer">
+              <h4>第三层：决策规则</h4>
+              <p>遇到 AI 新能力，先问"我要什么"，再问"它能干嘛"。描述不清 = AI 无法理解你 = 你还没准备好用它。</p>
+            </div>
+            <button class="fw-btn">展开下一层 →</button>
+          </div>
+          <div class="callout-insight">
+            <span class="callout-icon">🎯</span>
+            <div>"工具是替代不了人的，反而人越聪明、越会使用工具，机会越多。"<span class="credibility-badge">🟡 经验</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <div class="quiz">
+            <p class="quiz-prompt">团队要做一个 AI 功能，大家在争论"该接入多少大模型能力"。用哆啦A梦模型，你该先把讨论拉回到哪？</p>
+            <div class="quiz-options" data-correct="C">
+              <button class="quiz-option" data-value="A">A. 先比拼谁家模型最强</button>
+              <button class="quiz-option" data-value="B">B. 先把能塞的 AI 能力都塞进去</button>
+              <button class="quiz-option" data-value="C">C. 先问清楚：用户真正的痛点需求是什么</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>口袋（能力）不是关键，大雄（精准需求）才是。Jason 做产品坚持"每个人都问一遍痛点"——爸妈、女儿都问。先定义需求，再谈接什么工具。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="module" id="module-3" data-module="3">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 3 · 反直觉转折</span>
+          <h2>写代码真正难的不是"写"，是"调错"</h2>
+          <p class="lead">核心问题：AI 都能生成代码了，为什么还会"差点放弃"？人脑在哪一环不可替代？</p>
+          <p>你以为 web coding 的瓶颈是生成。真相是：<strong>生成很爽，调错要命。</strong> 王博源上线前两周，App 每天崩溃 600+ 次，每次报错都不一样却 100% 复现。他把报错丢给 AI，AI 每次都说"修好了"——要么没修好，要么修得极不优雅。</p>
+          <div class="callout-insight">
+            <span class="callout-icon">🌀</span>
+            <div>一天 600 多次崩溃。"我每次都不敢退出，一退出心里咯噔一下，非常痛苦。"<span class="credibility-badge">🟢 亲历</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>转折发生在他停下来的那几天</h3>
+          <div class="chat-group">
+            <div class="chat-message chat-left">
+              <span class="chat-sender">依赖 AI 阶段</span>
+              <p>报错丢给 AI → "我已经帮你修复了" → 要么没修好，要么很不优雅，不是我想要的。</p>
+            </div>
+            <div class="chat-message chat-right">
+              <span class="chat-sender">退回人脑</span>
+              <p>休息几天，不碰 AI。用自己的大脑想：问题出在 iOS 的 navigation 层级——我一直把 App 当成网页在写。</p>
+            </div>
+            <div class="chat-message chat-left">
+              <span class="chat-sender">重构问题再指挥 AI</span>
+              <p>"那我干脆做个浏览器：所有页面都是网页，你把网页逻辑复原到我的 App。" AI 套了个壳 → 从此不再崩溃。</p>
+            </div>
+          </div>
+          <div class="quote-translation">
+            <div class="quote-left">
+              <span class="quote-speaker">主持人 · 原话</span>
+              <blockquote>"看山不是山，看山还是山……你放弃用 AI 休息几天，又用了你自己的<strong>人脑</strong>思考这个问题，然后再告诉 AI 用你给的方案，最后解决。"</blockquote>
+            </div>
+            <div class="insight-right">
+              <span class="insight-label">可复用洞见</span>
+              <p>当 AI 反复给不出优雅解，别继续丢报错——停下来，用人脑跳出框架重构问题，再把新心智模型交给 AI。</p>
+              <p class="insight-trigger">何时套用：AI 陷入"修了又坏"的循环、解法越来越丑时。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <div class="quiz">
+            <p class="quiz-prompt">你用 AI 做的功能反复报错，AI 每次都"修好了"却越改越乱。最符合本期经验的做法是？</p>
+            <div class="quiz-options" data-correct="B">
+              <button class="quiz-option" data-value="A">A. 继续把新报错丢给 AI，直到它蒙对</button>
+              <button class="quiz-option" data-value="B">B. 停下来用人脑重构问题，换个更简单的心智模型，再指挥 AI</button>
+              <button class="quiz-option" data-value="C">C. 接受这个不优雅的版本，先上线</button>
+              <button class="quiz-option" data-value="D">D. 换一个更贵的模型套餐</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>调错是人脑最不可替代的一环。王博源不是靠更强的 AI，而是靠"把 App 重新理解成浏览器"这个人脑重构，才终结了每天 600 次崩溃。跳出框架 > 继续丢报错。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="module" id="module-4" data-module="4">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 4 · 护城河</span>
+          <h2>AI 做执行，人做品味</h2>
+          <p class="lead">核心问题：AI 都能写代码、能做文学创作了，文科生会不会失业？</p>
+          <div class="quote-translation">
+            <div class="quote-left">
+              <span class="quote-speaker">王博源 · 原话</span>
+              <blockquote>"乔布斯说这个东西到最后实际上是一种<strong>品味</strong>的东西，美誉的东西还是很重要的……我看到很多外部 coding 应用，拿到手还是有些粗糙。我尽量希望我用它的时候有一种精致的感觉在里面。"</blockquote>
+            </div>
+            <div class="insight-right">
+              <span class="insight-label">可复用洞见</span>
+              <p>AI 抹平了执行门槛，竞争就被推向机器最难替代的地方：品味、审美、叙事、个人印记。</p>
+              <p class="insight-trigger">何时套用：当你担心"AI 能做我这行了"——问自己，我能在执行之上加什么品味？</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>执行 vs 品味：分工在哪</h3>
+          <table class="insight-table">
+            <thead><tr><th>环节</th><th>谁更强</th><th>本期例证</th></tr></thead>
+            <tbody>
+              <tr><td>把功能做出来（执行）</td><td>AI</td><td>零基础也能生成能跑的 App</td></tr>
+              <tr><td>好 / 美 / 精致（品味）</td><td>人</td><td>很多 AI 应用"拿到手还是粗糙"</td></tr>
+              <tr><td>叙事 / 个人印记</td><td>人</td><td>文字工作者的 App 里"有大量叙事和细节"</td></tr>
+              <tr><td>欣赏世界、判断什么是美</td><td>人</td><td>王博源说这是要留给下一代的基础能力</td></tr>
+            </tbody>
+          </table>
+          <div class="callout-insight">
+            <span class="callout-icon">🎨</span>
+            <div>结论反直觉：AI 不会让文科消失，"反而会给文科生更多机会"。<span class="credibility-badge">🟡 经验</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <div class="quiz">
+            <p class="quiz-prompt">两个人用同一个 AI 工具都做出了能跑的 App。用本期的"品味护城河"，什么最可能拉开他们的差距？</p>
+            <div class="quiz-options" data-correct="C">
+              <button class="quiz-option" data-value="A">A. 谁写的 prompt 更长</button>
+              <button class="quiz-option" data-value="B">B. 谁用的模型更贵</button>
+              <button class="quiz-option" data-value="C">C. 谁在"能跑"之上做出了精致感、叙事和个人印记</button>
+              <button class="quiz-option" data-value="D">D. 谁生成得更快</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>执行力被 AI 抹平后，差异化落在品味。王博源追求"手工制品般的精致"，把媒体人的叙事能力灌进 App——这是 AI 给不了、别人抄不走的护城河。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="module" id="module-5" data-module="5">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 5 · 看本质</span>
+          <h2>恐慌的是概念，本质是 AI 来减负</h2>
+          <p class="lead">核心问题：prompt engineering、AI native、web coding……这些层出不穷的概念，为什么越看越焦虑？</p>
+          <div class="quote-translation">
+            <div class="quote-left">
+              <span class="quote-speaker">Jason · 原话</span>
+              <blockquote>"大家恐慌的是概念，焦虑的是概念。不看概念，看本质——他是在帮你解决问题，只不过用概念的方式让你更容易理解……<strong>AI 是帮你减负的</strong>，要拨开复杂看本质。"</blockquote>
+            </div>
+            <div class="insight-right">
+              <span class="insight-label">可复用洞见</span>
+              <p>新概念只是"让大模型更听你话"的包装。焦虑来自信息过载的叠加，不是来自 AI 本身。拨开概念，找你最真实的本源：你到底想做什么。</p>
+              <p class="insight-trigger">何时套用：被一堆新术语和新闻淹没、不知道该学什么时。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>边界案例：养孩子该不该提前布局 AI？</h3>
+          <p>主持人原本打算早早给孩子报编程班、培养代码能力。但到 2026 年回看——<strong>这条路径大概率已失效</strong>。web coding 让"会写代码"不再稀缺。</p>
+          <div class="pattern-cards">
+            <div class="pattern-card">
+              <span class="pattern-icon">❌</span>
+              <h4>失效的布局</h4>
+              <p>低龄编程班、为"AI 时代"焦虑性提前卷技能。</p>
+            </div>
+            <div class="pattern-card">
+              <span class="pattern-icon">✅</span>
+              <h4>更抗跌的能力</h4>
+              <p>逻辑、语言、情绪稳定、挖掘兴趣。Jason：大方向不变，把 AI 当"过程中的决策工具"。</p>
+            </div>
+          </div>
+          <div class="screen-annotation"><strong>第一性原理</strong>"碰到一个看似危险的东西时，能不能看到它最重要的第一性原理"——这才是该培养的能力，而非追某个具体技能。</div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <div class="quiz">
+            <p class="quiz-prompt">你被 prompt engineering、AI native、web coding 一堆新词搞得很焦虑，不知道先学哪个。用 Jason 的"看本质"，最该做的是？</p>
+            <div class="quiz-options" data-correct="B">
+              <button class="quiz-option" data-value="A">A. 把每个新概念都系统学一遍再动手</button>
+              <button class="quiz-option" data-value="B">B. 把概念放一边，先问"我到底想做什么"，用 AI 帮我逼近那件事</button>
+              <button class="quiz-option" data-value="C">C. 等这些概念稳定下来再说</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>概念是噪声，本质是"AI 帮你减负、更听你话"。焦虑来自信息叠加。拨开概念，锚定"你想做什么"，让 AI 帮你逼近它——而不是被术语牵着走。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="module" id="module-6" data-module="6">
+      <div class="screen">
+        <div class="screen-content">
+          <span class="module-label">Module 6 · 从焦虑到行动</span>
+          <h2>怪物和食物的区别，只在你敢不敢放进嘴里</h2>
+          <p class="lead">核心问题：道理都懂了，具体明天该做什么，才能真的不焦虑？</p>
+          <div class="quote-translation">
+            <div class="quote-left">
+              <span class="quote-speaker">主持人 · 原话</span>
+              <blockquote>"就像没吃过螃蟹的人，以为螃蟹是怪物；当你吃了，才知道它是食物。<strong>怪物跟食物之间的区别，仅限于你把它鼓起勇气放进嘴里。</strong>"</blockquote>
+            </div>
+            <div class="insight-right">
+              <span class="insight-label">可复用洞见</span>
+              <p>焦虑 80% 来自"只听和看"、没"动手做"。花十几块钱先用起来，再决定拥抱还是否定——都来得及。</p>
+              <p class="insight-trigger">何时套用：你对某个 AI 工具反复观望、迟迟不动手时。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>明天可以做的 5 件事</h3>
+          <div class="action-item"><span class="action-num">1</span><div class="action-body"><p><strong>先用起来</strong>：挑一个 web coding 工具，花十几块钱/免费额度，今天就打开聊一聊。</p></div></div>
+          <div class="action-item"><span class="action-num">2</span><div class="action-body"><p><strong>说清需求</strong>：把一个你想做的小东西，用自然语言一比一讲清楚逻辑（像王博源讲歌单）。</p></div></div>
+          <div class="action-item"><span class="action-num">3</span><div class="action-body"><p><strong>卡住就退回人脑</strong>：AI 越改越乱时，停下来重构问题，换个更简单的心智模型。</p></div></div>
+          <div class="action-item"><span class="action-num">4</span><div class="action-body"><p><strong>加一层品味</strong>：在"能跑"之上，追求精致感、叙事、个人印记。</p></div></div>
+          <div class="action-item"><span class="action-num">5</span><div class="action-body"><p><strong>拨开概念</strong>：不被术语吓到，锚定"我到底想做什么"，把 AI 当伙伴一起成长。</p></div></div>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="screen-content">
+          <h3>Growth Log：这期更新了我的什么判断</h3>
+          <div class="growth-log-card">
+            <div class="gl-section">
+              <span class="gl-label">我曾以为</span>
+              <p>面对 AI 我在"听和看"里打转、焦虑岗位被取代；默认"会用 AI"≈"懂技术"，那是理科生的事。</p>
+            </div>
+            <div class="gl-arrow">↓</div>
+            <div class="gl-section">
+              <span class="gl-label">我现在认为</span>
+              <p>壁垒已被推倒，稀缺的是<strong>精准提需求 + 品味 + 跳出框架重构问题</strong>。我要做那个能说清痛点的大雄。焦虑来自只听不做——先动手。</p>
+            </div>
+          </div>
+          <div class="quiz">
+            <p class="quiz-prompt">你对一个新 AI 工具已经观望两周，天天刷相关新闻却越看越慌。用"螃蟹"隐喻，最该做的是？</p>
+            <div class="quiz-options" data-correct="B">
+              <button class="quiz-option" data-value="A">A. 再多看点评测和新闻，等看懂了再上手</button>
+              <button class="quiz-option" data-value="B">B. 今天就花小钱用起来，亲历一次再判断</button>
+              <button class="quiz-option" data-value="C">C. 先在群里问问别人好不好用</button>
+            </div>
+            <div class="quiz-feedback"><span class="quiz-feedback-text" hidden>怪物和食物的区别只在你敢不敢放进嘴里。焦虑 80% 来自只听不做——"先看看他是个什么玩意儿，再去利用或否定，都来得及，但第一步先用起来"。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+</body>
+</html>
