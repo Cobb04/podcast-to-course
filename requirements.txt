@@ -1,5 +1,5 @@
 # podcast-to-course ingest 层依赖（Python 3.10+）
-# 仅 ingest（音频解析 + 通义听悟转写）需要；课程生成逻辑本身不依赖这些包。
+# 仅 ingest（音频下载/解析 + 可选的通义听悟 provider）需要；课程生成逻辑本身不依赖这些包。
 
 requests>=2.31.0           # 所有 HTTP 请求（小宇宙页面、结果下载）
 beautifulsoup4>=4.12.0     # 解析小宇宙页面 HTML（og:audio / JSON-LD）
