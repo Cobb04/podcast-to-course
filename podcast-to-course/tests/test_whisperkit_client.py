@@ -1,9 +1,11 @@
 import json
+import io
 import inspect
 import os
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -81,6 +83,22 @@ class WhisperKitCommandTests(unittest.TestCase):
             "/models/speakerkit",
         )
 
+    def test_passes_proper_noun_prompt_and_worker_count(self):
+        parameters = inspect.signature(build_whisperkit_command).parameters
+        self.assertIn("prompt", parameters)
+        self.assertIn("concurrent_worker_count", parameters)
+
+        command = build_whisperkit_command(
+            "argmax-cli",
+            Path("/tmp/episode.m4a"),
+            Path("/tmp/reports"),
+            prompt="LibLib，陈冕，Evoken",
+            concurrent_worker_count=2,
+        )
+
+        self.assertEqual(command[command.index("--prompt") + 1], "LibLib，陈冕，Evoken")
+        self.assertEqual(command[command.index("--concurrent-worker-count") + 1], "2")
+
 
 class WhisperKitResultTests(unittest.TestCase):
     def test_parses_rttm_with_multiword_orthography(self):
@@ -153,6 +171,84 @@ SPEAKER episode 1 11.500 1.000 third <NA> A <NA> <NA>
             [{"Start": 500, "End": 2750, "Text": "你好世界"}],
         )
 
+    def test_uses_native_words_as_text_and_rttm_only_for_speaker_attribution(self):
+        native = {
+            "text": "Evoken和PMF",
+            "language": "zh",
+            "segments": [
+                {
+                    "start": 0.0,
+                    "end": 2.0,
+                    "text": "Evoken和PMF",
+                    "words": [
+                        {"word": "Ev", "start": 0.0, "end": 0.4},
+                        {"word": "oken", "start": 0.4, "end": 0.8},
+                        {"word": "和", "start": 0.8, "end": 1.0},
+                        {"word": "PM", "start": 1.0, "end": 1.4},
+                        {"word": "F", "start": 1.4, "end": 2.0},
+                    ],
+                }
+            ],
+        }
+        rttm = [
+            {
+                "start": 0.0,
+                "end": 2.0,
+                "text": "E v oken和PM F",
+                "speaker": "A",
+            }
+        ]
+
+        canonical = canonicalize_whisperkit_result(native, rttm)
+        paragraph = canonical["Transcription"]["Paragraphs"][0]
+
+        self.assertEqual(paragraph["SpeakerId"], "A")
+        self.assertEqual(
+            "".join(word["Text"] for word in paragraph["Words"]),
+            "Evoken和PMF",
+        )
+
+    def test_uses_physical_audio_duration_and_drops_unsupported_trailing_words(self):
+        native = {
+            "text": "正文尾部幻觉",
+            "language": "zh",
+            "timings": {"inputAudioSeconds": 1.0, "fullPipeline": 0.5},
+            "segments": [
+                {
+                    "start": 0.0,
+                    "end": 1.0,
+                    "text": "正文",
+                    "words": [{"word": "正文", "start": 0.0, "end": 1.0}],
+                },
+                {
+                    "start": 2.0,
+                    "end": 2.2,
+                    "text": "尾部幻觉",
+                    "words": [{"word": "尾部幻觉", "start": 2.0, "end": 2.2}],
+                },
+            ],
+        }
+        rttm = [{"start": 0.0, "end": 1.0, "text": "正文", "speaker": "A"}]
+
+        canonical = canonicalize_whisperkit_result(native, rttm)
+        transcription = canonical["Transcription"]
+
+        self.assertEqual(transcription["AudioInfo"]["Duration"], 1000)
+        text = "".join(
+            word["Text"]
+            for paragraph in transcription["Paragraphs"]
+            for word in paragraph["Words"]
+        )
+        self.assertEqual(text, "正文")
+        self.assertEqual(transcription["Text"], "正文")
+        metrics = canonical["Metrics"]
+        self.assertEqual(metrics["native_timestamp_order_violations"], 0)
+        self.assertEqual(metrics["canonical_timestamp_order_violations"], 0)
+        self.assertEqual(metrics["negative_duration_count"], 0)
+        self.assertEqual(metrics["coverage_ratio"], 1.0)
+        self.assertIn("native timestamps exceed physical audio duration", metrics["warnings"])
+        self.assertIn("1 unsupported trailing word(s) dropped", metrics["warnings"])
+
     def test_falls_back_to_native_segments_without_diarization(self):
         native = {
             "text": "Hello world",
@@ -181,6 +277,37 @@ SPEAKER episode 1 11.500 1.000 third <NA> A <NA> <NA>
                 {"Start": 800, "End": 1500, "Text": " world"},
             ],
         )
+
+    def test_no_diarization_also_drops_words_beyond_physical_audio(self):
+        native = {
+            "text": "正文尾部幻觉",
+            "language": "zh",
+            "timings": {"inputAudioSeconds": 1.0},
+            "segments": [
+                {
+                    "start": 0.0,
+                    "end": 1.0,
+                    "text": "正文",
+                    "words": [{"word": "正文", "start": 0.0, "end": 1.0}],
+                },
+                {
+                    "start": 2.0,
+                    "end": 2.2,
+                    "text": "尾部幻觉",
+                    "words": [{"word": "尾部幻觉", "start": 2.0, "end": 2.2}],
+                },
+            ],
+        }
+
+        canonical = canonicalize_whisperkit_result(native, [])
+        words = [
+            word
+            for paragraph in canonical["Transcription"]["Paragraphs"]
+            for word in paragraph["Words"]
+        ]
+
+        self.assertEqual("".join(word["Text"] for word in words), "正文")
+        self.assertEqual(canonical["Metrics"]["dropped_word_count"], 1)
 
     def test_writes_canonical_json(self):
         native = {
@@ -247,9 +374,15 @@ print('SPEAKER episode 1 0.000 1.000 hello world <NA> A <NA> <NA>')
             )
 
             canonical = json.loads(artifacts["raw"].read_text(encoding="utf-8"))
+            self.assertIn("rttm", artifacts)
+            self.assertIn("metrics", artifacts)
             self.assertTrue(artifacts["native_json"].exists())
             self.assertTrue(artifacts["srt"].exists())
             self.assertTrue(artifacts["log"].exists())
+            self.assertTrue(artifacts["rttm"].exists())
+            metrics = json.loads(artifacts["metrics"].read_text(encoding="utf-8"))
+            self.assertEqual(metrics["native_segment_count"], 1)
+            self.assertEqual(metrics["speaker_count"], 1)
             self.assertEqual(
                 canonical["Transcription"]["Paragraphs"][0]["SpeakerId"], "A"
             )
@@ -289,6 +422,71 @@ print('Error during diarization: model download timed out')
                     language="en",
                     diarization=True,
                 )
+
+    def test_rejects_missing_local_model_directories_before_starting_cli(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            audio = tmp_path / "episode.m4a"
+            audio.write_bytes(b"fake")
+
+            with self.assertRaisesRegex(WhisperKitError, "WhisperKit 模型目录不存在"):
+                transcribe_with_whisperkit(
+                    audio,
+                    tmp_path / "out-model",
+                    executable="/usr/bin/true",
+                    model_path=tmp_path / "missing-whisper-model",
+                    diarization=False,
+                )
+
+            with self.assertRaisesRegex(WhisperKitError, "SpeakerKit 模型目录不存在"):
+                transcribe_with_whisperkit(
+                    audio,
+                    tmp_path / "out-speaker",
+                    executable="/usr/bin/true",
+                    diarization=True,
+                    diarization_model_path=tmp_path / "missing-speaker-model",
+                )
+
+    def test_cli_transcript_is_logged_without_flooding_stdout(self):
+        fake_cli_source = """#!/usr/bin/env python3
+import json
+import pathlib
+import sys
+args = sys.argv[1:]
+audio = pathlib.Path(args[args.index('--audio-path') + 1])
+report_dir = pathlib.Path(args[args.index('--report-path') + 1])
+report_dir.mkdir(parents=True, exist_ok=True)
+native = {
+    'text': 'hello world',
+    'language': 'en',
+    'segments': [{'start': 0.0, 'end': 1.0, 'text': 'hello world'}],
+}
+(report_dir / (audio.stem + '.json')).write_text(json.dumps(native))
+print('FULL TRANSCRIPT THAT BELONGS IN THE LOG')
+print('SPEAKER episode 1 0.000 1.000 hello world <NA> A <NA> <NA>')
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            fake_cli = tmp_path / "fake-whisperkit"
+            fake_cli.write_text(fake_cli_source, encoding="utf-8")
+            os.chmod(fake_cli, 0o755)
+            audio = tmp_path / "episode.m4a"
+            audio.write_bytes(b"fake")
+            stdout = io.StringIO()
+
+            with redirect_stdout(stdout):
+                artifacts = transcribe_with_whisperkit(
+                    audio,
+                    tmp_path / "out",
+                    executable=str(fake_cli),
+                    diarization=True,
+                )
+
+            self.assertNotIn("FULL TRANSCRIPT", stdout.getvalue())
+            self.assertIn(
+                "FULL TRANSCRIPT",
+                artifacts["log"].read_text(encoding="utf-8"),
+            )
 
 
 if __name__ == "__main__":

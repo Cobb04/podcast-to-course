@@ -58,6 +58,7 @@ class AudioDownloadTests(unittest.TestCase):
 
             self.assertEqual(path.name, "source_audio.mp3")
             self.assertEqual(path.read_bytes(), _AudioHandler.payload)
+            self.assertTrue((Path(tmp) / "source_audio.mp3.download.json").exists())
 
     def test_resumes_partial_download_with_range_request(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -68,6 +69,24 @@ class AudioDownloadTests(unittest.TestCase):
 
             self.assertEqual(path.read_bytes(), _AudioHandler.payload)
             self.assertEqual(_AudioHandler.ranges[-1], "bytes=3-")
+
+    def test_does_not_reuse_cached_audio_for_a_different_source_url(self):
+        original_payload = _AudioHandler.payload
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                first = download_public_audio(
+                    f"{self.base_url}/first.mp3", Path(tmp)
+                )
+                self.assertEqual(first.read_bytes(), original_payload)
+
+                _AudioHandler.payload = b"ID3-a-different-episode"
+                second = download_public_audio(
+                    f"{self.base_url}/second.mp3", Path(tmp)
+                )
+
+                self.assertEqual(second.read_bytes(), _AudioHandler.payload)
+        finally:
+            _AudioHandler.payload = original_payload
 
 
 if __name__ == "__main__":

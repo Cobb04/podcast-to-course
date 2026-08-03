@@ -11,7 +11,6 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from typing import Any, Optional
 
@@ -62,6 +61,8 @@ def build_whisperkit_command(
     diarization: bool = True,
     speaker_count: int = 0,
     diarization_model_path: Optional[Path] = None,
+    prompt: Optional[str] = None,
+    concurrent_worker_count: int = 4,
 ) -> list[str]:
     """Build the long-audio-safe Argmax CLI command."""
     command = [
@@ -85,6 +86,9 @@ def build_whisperkit_command(
     ])
     if language:
         command.extend(["--language", language])
+    if prompt and prompt.strip():
+        command.extend(["--prompt", prompt.strip()])
+    command.extend(["--concurrent-worker-count", str(concurrent_worker_count)])
     if diarization:
         command.append("--diarization")
         if speaker_count > 0:
@@ -162,6 +166,205 @@ def _native_end_seconds(native: dict[str, Any]) -> float:
     return max(ends, default=0.0)
 
 
+def _physical_duration_seconds(native: dict[str, Any]) -> float:
+    timings = native.get("timings") or {}
+    try:
+        duration = float(timings.get("inputAudioSeconds", 0))
+    except (TypeError, ValueError):
+        duration = 0.0
+    return duration if duration > 0 else _native_end_seconds(native)
+
+
+def _flatten_native_words(native: dict[str, Any]) -> list[dict[str, Any]]:
+    words: list[dict[str, Any]] = []
+    for segment in native.get("segments") or []:
+        if not isinstance(segment, dict):
+            continue
+        for word in segment.get("words") or []:
+            if not isinstance(word, dict):
+                continue
+            text = str(word.get("word", ""))
+            if not text:
+                continue
+            try:
+                start = float(word.get("start", segment.get("start", 0)))
+                end = float(word.get("end", segment.get("end", start)))
+            except (TypeError, ValueError):
+                continue
+            words.append(
+                {"start": max(0.0, start), "end": max(start, end), "text": text}
+            )
+    return sorted(words, key=lambda item: (item["start"], item["end"]))
+
+
+def _native_word_paragraphs(
+    native: dict[str, Any], diarized_segments: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Keep WhisperKit words verbatim and use RTTM only for speaker labels."""
+    words = _flatten_native_words(native)
+    if not words or not diarized_segments:
+        return []
+
+    physical_duration = _physical_duration_seconds(native)
+    diarization_end = max(
+        (float(item.get("end", 0)) for item in diarized_segments), default=0.0
+    )
+    supported_end = max(physical_duration, diarization_end)
+    paragraphs: list[dict[str, Any]] = []
+    active: list[tuple[int, dict[str, Any]]] = []
+    next_segment = 0
+    previous_speaker = ""
+
+    for word in words:
+        start = word["start"]
+        end = word["end"]
+        if supported_end > 0 and start > supported_end:
+            continue
+
+        active = [
+            pair for pair in active if float(pair[1].get("end", 0)) >= start
+        ]
+        while next_segment < len(diarized_segments):
+            segment = diarized_segments[next_segment]
+            if float(segment.get("start", 0)) > end:
+                break
+            active.append((next_segment, segment))
+            next_segment += 1
+
+        best: Optional[tuple[float, int, str]] = None
+        for index, segment in active:
+            overlap = max(
+                0.0,
+                min(end, float(segment.get("end", 0)))
+                - max(start, float(segment.get("start", 0))),
+            )
+            if overlap <= 0:
+                continue
+            candidate = (overlap, -index, str(segment.get("speaker", "")))
+            if best is None or candidate[:2] > best[:2]:
+                best = candidate
+
+        speaker = best[2] if best else previous_speaker
+        if not speaker:
+            speaker = str(diarized_segments[0].get("speaker", ""))
+        previous_speaker = speaker
+
+        output_start = min(start, physical_duration) if physical_duration else start
+        output_end = min(end, physical_duration) if physical_duration else end
+        canonical_word = {
+            "Start": _milliseconds(output_start),
+            "End": _milliseconds(max(output_start, output_end)),
+            "Text": word["text"],
+        }
+        if not paragraphs or paragraphs[-1].get("SpeakerId") != speaker:
+            paragraphs.append({"SpeakerId": speaker, "Words": []})
+        paragraphs[-1]["Words"].append(canonical_word)
+
+    return paragraphs
+
+
+def build_transcription_metrics(
+    native: dict[str, Any],
+    diarized_segments: list[dict[str, Any]],
+    paragraphs: list[dict[str, Any]],
+) -> dict[str, Any]:
+    native_words = _flatten_native_words(native)
+    canonical_words = [
+        word
+        for paragraph in paragraphs
+        for word in (paragraph.get("Words") or [])
+        if isinstance(word, dict)
+    ]
+    physical_duration = _physical_duration_seconds(native)
+    native_end = _native_end_seconds(native)
+    timings = native.get("timings") or {}
+    try:
+        pipeline_seconds = float(timings.get("fullPipeline", 0))
+    except (TypeError, ValueError):
+        pipeline_seconds = 0.0
+    speakers = {
+        str(paragraph.get("SpeakerId"))
+        for paragraph in paragraphs
+        if paragraph.get("SpeakerId") not in (None, "")
+    }
+    native_timestamp_order_violations = 0
+    negative_duration_count = 0
+    previous_start: Optional[float] = None
+    for segment in native.get("segments") or []:
+        if not isinstance(segment, dict):
+            continue
+        for word in segment.get("words") or []:
+            if not isinstance(word, dict):
+                continue
+            try:
+                start = float(word.get("start", segment.get("start", 0)))
+                end = float(word.get("end", segment.get("end", start)))
+            except (TypeError, ValueError):
+                continue
+            if previous_start is not None and start < previous_start:
+                native_timestamp_order_violations += 1
+            if end < start:
+                negative_duration_count += 1
+            previous_start = start
+
+    canonical_timestamp_order_violations = 0
+    previous_canonical_start: Optional[int] = None
+    for word in canonical_words:
+        start = int(word.get("Start", 0))
+        if previous_canonical_start is not None and start < previous_canonical_start:
+            canonical_timestamp_order_violations += 1
+        previous_canonical_start = start
+
+    canonical_end_ms = max(
+        (int(word.get("End", 0)) for word in canonical_words), default=0
+    )
+    coverage_ratio = (
+        min(1.0, canonical_end_ms / (physical_duration * 1000))
+        if physical_duration > 0
+        else None
+    )
+    dropped_word_count = max(0, len(native_words) - len(canonical_words))
+    warnings: list[str] = []
+    drift_warning_threshold = max(0.5, physical_duration * 0.002)
+    if physical_duration > 0 and native_end - physical_duration > drift_warning_threshold:
+        warnings.append("native timestamps exceed physical audio duration")
+    if dropped_word_count:
+        warnings.append(f"{dropped_word_count} unsupported trailing word(s) dropped")
+    if native_timestamp_order_violations:
+        warnings.append(
+            f"{native_timestamp_order_violations} native timestamp order violation(s)"
+        )
+    if canonical_timestamp_order_violations:
+        warnings.append(
+            f"{canonical_timestamp_order_violations} canonical timestamp order violation(s)"
+        )
+    if negative_duration_count:
+        warnings.append(f"{negative_duration_count} negative word duration(s)")
+    return {
+        "audio_duration_seconds": physical_duration,
+        "native_last_timestamp_seconds": native_end,
+        "timestamp_drift_seconds": native_end - physical_duration,
+        "native_segment_count": len(native.get("segments") or []),
+        "native_word_count": len(native_words),
+        "canonical_word_count": len(canonical_words),
+        "dropped_word_count": dropped_word_count,
+        "canonical_paragraph_count": len(paragraphs),
+        "diarization_turn_count": len(diarized_segments),
+        "speaker_count": len(speakers),
+        "native_timestamp_order_violations": native_timestamp_order_violations,
+        "canonical_timestamp_order_violations": canonical_timestamp_order_violations,
+        "negative_duration_count": negative_duration_count,
+        "coverage_ratio": coverage_ratio,
+        "pipeline_seconds": pipeline_seconds,
+        "speed_factor": (
+            physical_duration / pipeline_seconds
+            if physical_duration > 0 and pipeline_seconds > 0
+            else None
+        ),
+        "warnings": warnings,
+    }
+
+
 def canonicalize_whisperkit_result(
     native: dict[str, Any],
     diarized_segments: list[dict[str, Any]],
@@ -172,19 +375,22 @@ def canonicalize_whisperkit_result(
 
     paragraphs: list[dict[str, Any]] = []
     if diarized_segments:
-        for item in diarized_segments:
-            text = str(item.get("text", "")).strip()
-            if not text:
-                continue
-            start = _milliseconds(item.get("start", 0))
-            end = _milliseconds(item.get("end", item.get("start", 0)))
-            paragraphs.append(
-                {
-                    "SpeakerId": str(item.get("speaker", "")),
-                    "Words": [{"Start": start, "End": end, "Text": text}],
-                }
-            )
+        paragraphs = _native_word_paragraphs(native, diarized_segments)
+        if not paragraphs:
+            for item in diarized_segments:
+                text = str(item.get("text", "")).strip()
+                if not text:
+                    continue
+                start = _milliseconds(item.get("start", 0))
+                end = _milliseconds(item.get("end", item.get("start", 0)))
+                paragraphs.append(
+                    {
+                        "SpeakerId": str(item.get("speaker", "")),
+                        "Words": [{"Start": start, "End": end, "Text": text}],
+                    }
+                )
     else:
+        physical_duration = _physical_duration_seconds(native)
         for segment in native.get("segments") or []:
             if not isinstance(segment, dict):
                 continue
@@ -195,20 +401,48 @@ def canonicalize_whisperkit_result(
                 text = str(word.get("word", ""))
                 if not text:
                     continue
+                try:
+                    start = float(word.get("start", segment.get("start", 0)))
+                    end = float(word.get("end", segment.get("end", start)))
+                except (TypeError, ValueError):
+                    continue
+                if physical_duration > 0 and start > physical_duration:
+                    continue
+                output_start = (
+                    min(start, physical_duration) if physical_duration else start
+                )
+                output_end = min(end, physical_duration) if physical_duration else end
                 canonical_words.append(
                     {
-                        "Start": _milliseconds(word.get("start", segment.get("start", 0))),
-                        "End": _milliseconds(word.get("end", segment.get("end", 0))),
+                        "Start": _milliseconds(output_start),
+                        "End": _milliseconds(max(output_start, output_end)),
                         "Text": text,
                     }
                 )
             if not canonical_words:
                 text = str(segment.get("text", "")).strip()
-                if text:
+                try:
+                    segment_start = float(segment.get("start", 0))
+                    segment_end = float(segment.get("end", segment_start))
+                except (TypeError, ValueError):
+                    segment_start = segment_end = 0.0
+                if text and not (
+                    physical_duration > 0 and segment_start > physical_duration
+                ):
+                    output_start = (
+                        min(segment_start, physical_duration)
+                        if physical_duration
+                        else segment_start
+                    )
+                    output_end = (
+                        min(segment_end, physical_duration)
+                        if physical_duration
+                        else segment_end
+                    )
                     canonical_words.append(
                         {
-                            "Start": _milliseconds(segment.get("start", 0)),
-                            "End": _milliseconds(segment.get("end", 0)),
+                            "Start": _milliseconds(output_start),
+                            "End": _milliseconds(max(output_start, output_end)),
                             "Text": text,
                         }
                     )
@@ -218,11 +452,14 @@ def canonicalize_whisperkit_result(
     if not paragraphs:
         raise WhisperKitError("WhisperKit 结果中没有可读的 segments/words。")
 
-    diarized_end = max(
-        (float(item.get("end", 0)) for item in diarized_segments), default=0.0
+    duration_ms = _milliseconds(_physical_duration_seconds(native))
+    canonical_text = "".join(
+        str(word.get("Text", ""))
+        for paragraph in paragraphs
+        for word in (paragraph.get("Words") or [])
+        if isinstance(word, dict)
     )
-    duration_ms = _milliseconds(max(_native_end_seconds(native), diarized_end))
-    return {
+    canonical = {
         "Provider": "whisperkit",
         "Transcription": {
             "AudioInfo": {
@@ -230,9 +467,13 @@ def canonicalize_whisperkit_result(
                 "Language": native.get("language") or "unknown",
             },
             "Paragraphs": paragraphs,
-            "Text": native.get("text", ""),
+            "Text": canonical_text,
         },
     }
+    canonical["Metrics"] = build_transcription_metrics(
+        native, diarized_segments, paragraphs
+    )
+    return canonical
 
 
 def write_canonical_transcription(
@@ -261,10 +502,20 @@ def transcribe_with_whisperkit(
     diarization: bool = True,
     speaker_count: int = 0,
     diarization_model_path: Optional[Path] = None,
+    prompt: Optional[str] = None,
+    concurrent_worker_count: int = 4,
 ) -> dict[str, Path]:
     """Run WhisperKit, preserve native artifacts, and write canonical JSON."""
     audio_path = Path(audio_path).resolve()
     out_dir = Path(out_dir).resolve()
+    if model_path is not None and not Path(model_path).expanduser().is_dir():
+        raise WhisperKitError(f"WhisperKit 模型目录不存在：{model_path}")
+    if (
+        diarization
+        and diarization_model_path is not None
+        and not Path(diarization_model_path).expanduser().is_dir()
+    ):
+        raise WhisperKitError(f"SpeakerKit 模型目录不存在：{diarization_model_path}")
     native_dir = out_dir / "whisperkit_native"
     native_dir.mkdir(parents=True, exist_ok=True)
     log_path = out_dir / "whisperkit.log"
@@ -278,6 +529,8 @@ def transcribe_with_whisperkit(
         diarization=diarization,
         speaker_count=speaker_count,
         diarization_model_path=diarization_model_path,
+        prompt=prompt,
+        concurrent_worker_count=concurrent_worker_count,
     )
 
     output_chunks: list[str] = []
@@ -301,8 +554,6 @@ def transcribe_with_whisperkit(
                 output_chunks.append(chunk)
                 log.write(chunk)
                 log.flush()
-                sys.stdout.write(chunk)
-                sys.stdout.flush()
         return_code = process.wait()
 
     combined_output = "".join(output_chunks)
@@ -334,10 +585,28 @@ def transcribe_with_whisperkit(
     canonical_path = write_canonical_transcription(
         native, diarized_segments, out_dir / "raw_transcription.json"
     )
+    rttm_path = native_dir / f"{audio_path.stem}.rttm"
+    rttm_lines = [
+        line.strip()
+        for line in combined_output.splitlines()
+        if line.strip().startswith("SPEAKER ")
+    ]
+    rttm_path.write_text(
+        "\n".join(rttm_lines) + ("\n" if rttm_lines else ""),
+        encoding="utf-8",
+    )
+    canonical = json.loads(canonical_path.read_text(encoding="utf-8"))
+    metrics_path = out_dir / "transcription_metrics.json"
+    metrics_path.write_text(
+        json.dumps(canonical.get("Metrics", {}), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     artifacts = {
         "raw": canonical_path,
         "native_json": native_json_path,
         "log": log_path,
+        "rttm": rttm_path,
+        "metrics": metrics_path,
     }
     if native_srt_path.exists():
         artifacts["srt"] = native_srt_path

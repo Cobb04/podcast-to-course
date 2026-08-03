@@ -85,6 +85,7 @@ brew install whisperkit-cli
 ```
 
 Audio longer than two hours uses incremental loading and VAD chunking with no artificial duration cap. Practical limits are local compute, disk, memory, and model behavior. SpeakerKit diarization is enabled by default.
+Canonical text always comes from WhisperKit's native word timestamps; RTTM only supplies speaker attribution, so diarization cannot corrupt terms such as `LibLib` or `PMF`. Physical audio duration is used to detect trailing timestamp drift, with machine-readable quality metrics saved for every run.
 
 ### Three mutually exclusive inputs
 
@@ -122,6 +123,13 @@ python podcast-to-course/scripts/ingest_podcast.py \
   --audio-url "https://example.com/audio.m4a" \
   --provider whisperkit \
   --speaker-count 2 \
+  --prompt "LibLib, Chen Mian, Evoken" \
+  --out outputs/demo
+
+# The default is four VAD workers; lower it on memory-constrained machines
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --concurrent-worker-count 2 \
   --out outputs/demo
 
 # Reduce memory use by disabling speaker diarization
@@ -136,9 +144,11 @@ Successful runs preserve auditable intermediate artifacts:
 ```text
 outputs/demo/
 ├── source_audio.m4a            # resumable cache; extension follows the source
-├── whisperkit_native/          # native WhisperKit JSON + SRT
+├── source_audio.m4a.download.json # URL, byte count, ETag, and cache identity
+├── whisperkit_native/          # native WhisperKit JSON + SRT + raw RTTM
 ├── whisperkit.log              # complete command and CLI output
 ├── raw_transcription.json      # provider-neutral stable intermediate format
+├── transcription_metrics.json # duration, drift, counts, coverage, and warnings
 ├── transcript.md               # the sole input to course generation
 └── ingest_report.md            # provider, model, paths, and errors
 ```
@@ -158,6 +168,7 @@ Validate with the short official sample first: `python podcast-to-course/scripts
 **Boundaries.**
 - Only **public, openly accessible** content. No bypassing paywalls, login, membership, encrypted, or private content.
 - Local mode downloads audio to the output directory and reuses or resumes it on later runs. Large media is gitignored.
+- A completed cache is reused only when both its source URL and byte count match; a same-named file from another URL is never treated as valid.
 - `auto` resolves WhisperKit → configured Tingwu. Pin `--provider` when deterministic routing matters.
 - Tingwu is used **only for ASR transcription** — its summary/chapter/QA features are not used as course content.
 - WhisperKit and `--transcript` incur no ASR API fee. Cloud charges are possible only when Tingwu is selected.

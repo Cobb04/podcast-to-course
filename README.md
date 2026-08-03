@@ -96,6 +96,7 @@ swift build -c release --product argmax-cli
 ```
 
 超过 2 小时的音频会使用增量加载和 VAD 切块，不设人为时长上限；实际速度与上限由 Mac 性能、磁盘和模型决定。默认开启 SpeakerKit 说话人分离。
+正文始终来自 WhisperKit 原生词级时间戳，RTTM 只负责说话人归属，避免分离结果把 `LibLib`、`PMF` 等词拆坏。系统还会以物理音频时长校验尾部漂移，并输出机器可读的质量指标。
 
 ### 三种互斥输入
 
@@ -133,6 +134,13 @@ python podcast-to-course/scripts/ingest_podcast.py \
   --audio-url "https://example.com/audio.m4a" \
   --provider whisperkit \
   --speaker-count 2 \
+  --prompt "LibLib，陈冕，Evoken" \
+  --out outputs/demo
+
+# 默认 4 个 VAD worker；内存紧张时可调低
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --concurrent-worker-count 2 \
   --out outputs/demo
 
 # 网络不稳定时，可预先下载模型并全程使用本地路径
@@ -157,9 +165,11 @@ python podcast-to-course/scripts/ingest_podcast.py \
 ```text
 outputs/demo/
 ├── source_audio.m4a            # 可续传的本地缓存，扩展名按源文件决定
-├── whisperkit_native/          # WhisperKit 原生 JSON + SRT
+├── source_audio.m4a.download.json # URL、字节数、ETag 等缓存身份
+├── whisperkit_native/          # WhisperKit 原生 JSON + SRT + 原始 RTTM
 ├── whisperkit.log              # 完整命令和 CLI 输出
 ├── raw_transcription.json      # provider 无关的稳定中间格式
+├── transcription_metrics.json # 时长、漂移、词数、覆盖率与质量警告
 ├── transcript.md               # 课程生成的唯一输入
 └── ingest_report.md            # provider、模型、路径和错误记录
 ```
@@ -179,6 +189,7 @@ export TINGWU_APP_KEY="..."
 **边界说明。**
 - 只支持**公开可访问**内容。不绕过登录、付费、会员、加密、私有内容。
 - 本地方案会下载音频到输出目录，并在后续重跑时复用或续传；大文件不会提交到 Git。
+- 完整缓存只在 URL 与字节数均匹配时复用；同名但不同来源的音频不会误命中。
 - `auto` 的顺序是 WhisperKit → 已配置的听悟。需要固定行为时显式传 `--provider`。
 - 通义听悟**仅用于 ASR 转写**——其摘要/章节/问答能力不作为课程内容。
 - WhisperKit 与 `--transcript` 不产生 ASR API 费用；只有选中听悟时才可能产生云端费用。

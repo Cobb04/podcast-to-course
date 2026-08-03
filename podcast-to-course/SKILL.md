@@ -24,9 +24,11 @@ Every course is built from a **`transcript.md`**. Before any course generation, 
 - All course generation MUST be based on `transcript.md`. Shownotes are auxiliary metadata only — they can enrich titles/attribution, but they can NEVER substitute for the transcript.
 - Do NOT bypass paywalls, login walls, encrypted media, or private content. Only public, openly accessible episodes are supported.
 - Do NOT claim support for arbitrary podcast platforms. Supported ingestion is: Xiaoyuzhou public episodes, public audio URLs, and existing transcripts.
-- WhisperKit local mode downloads the public audio into the selected output directory. It preserves native JSON, SRT, a CLI log, canonical `raw_transcription.json`, and `ingest_report.md`; use the report for failure diagnosis.
+- WhisperKit local mode downloads the public audio into the selected output directory. It preserves the URL-bound download manifest, native JSON, SRT, raw RTTM, CLI log, canonical `raw_transcription.json`, `transcription_metrics.json`, and `ingest_report.md`; use the report and metrics for failure diagnosis.
 - When model-host access is unreliable, use pre-downloaded WhisperKit and SpeakerKit Core ML directories through `--model-path` and `--diarization-model-path`; do not silently disable diarization when its model cannot load.
 - Long local audio uses incremental loading plus VAD chunking. Do not claim a guaranteed unlimited runtime: local compute, memory, disk, source quality, and model behavior remain practical limits.
+- Keep canonical transcript text from WhisperKit native words and use RTTM only for speaker attribution. When known, pass `--speaker-count`; use `--prompt` for short proper-noun hints, and lower `--concurrent-worker-count` on memory-constrained machines.
+- Treat `transcription_metrics.json` warnings as a review gate before course generation. Never use words beyond both physical audio duration and diarization coverage, and never treat the largest model timestamp as the physical duration.
 - Tingwu is used **only as an ASR transcription provider**. Do NOT use Tingwu's summarization, chapter, QA, or mind-map outputs as course content. Course generation, judgment exercises, and LLM-Wiki assets are produced by THIS skill, from the transcript.
 - WhisperKit and `--transcript` mode do not incur ASR API fees. Tingwu may incur cost only when selected. Prefer validating either provider with a short public audio sample before running a long episode.
 

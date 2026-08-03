@@ -134,12 +134,16 @@ class Report:
         self.whisperkit_called = "no"
         self.whisperkit_cli = ""
         self.model = ""
+        self.prompt = ""
+        self.concurrent_worker_count = ""
         self.diarization = ""
         self.diarization_model_path = ""
         self.local_audio_path = ""
         self.native_json_path = ""
         self.srt_path = ""
         self.log_path = ""
+        self.rttm_path = ""
+        self.metrics_path = ""
         self.task_id = ""
         self.final_status = ""
         self.raw_path = ""
@@ -184,12 +188,16 @@ class Report:
 - WhisperKit called: {self.whisperkit_called}
 - WhisperKit CLI: {self.whisperkit_cli}
 - Model: {self.model}
+- ASR prompt: {self.prompt}
+- Concurrent worker count: {self.concurrent_worker_count}
 - Diarization: {self.diarization}
 - Diarization model path: {self.diarization_model_path}
 - Cached audio: {self.local_audio_path}
 - Native WhisperKit JSON: {self.native_json_path}
 - SRT: {self.srt_path}
 - WhisperKit log: {self.log_path}
+- Speaker RTTM: {self.rttm_path}
+- Transcription metrics: {self.metrics_path}
 - TaskId: {self.task_id}
 - Final TaskStatus: {self.final_status}
 - raw_transcription.json: {self.raw_path}
@@ -312,6 +320,22 @@ def _run_tingwu(
     return transcript_path
 
 
+def build_asr_prompt(
+    source_meta: Optional[dict], explicit_prompt: Optional[str]
+) -> Optional[str]:
+    """Build a short ASR vocabulary hint; metadata never becomes transcript text."""
+    if explicit_prompt and explicit_prompt.strip():
+        return explicit_prompt.strip()[:500]
+    if not source_meta:
+        return None
+    values = [
+        str(source_meta.get(key, "")).strip()
+        for key in ("title", "podcast_name")
+    ]
+    prompt = "，".join(value for value in values if value)
+    return prompt[:500] or None
+
+
 def _run_whisperkit(
     audio_url: str,
     out_dir: Path,
@@ -326,11 +350,16 @@ def _run_whisperkit(
     speaker_count: int,
     diarization_model_path: Optional[Path],
     download_timeout: int,
+    prompt: Optional[str],
+    concurrent_worker_count: int,
 ) -> Optional[Path]:
     """Download public audio, transcribe locally, and normalize the result."""
     report.whisperkit_called = "yes"
     report.whisperkit_cli = executable
     report.model = str(model_path) if model_path else model
+    resolved_prompt = build_asr_prompt(source_meta, prompt)
+    report.prompt = resolved_prompt or ""
+    report.concurrent_worker_count = str(concurrent_worker_count)
     report.diarization = "enabled" if diarization else "disabled"
     report.diarization_model_path = str(diarization_model_path or "")
     report.log_path = str(out_dir / "whisperkit.log")
@@ -364,6 +393,8 @@ def _run_whisperkit(
             diarization=diarization,
             speaker_count=speaker_count,
             diarization_model_path=diarization_model_path,
+            prompt=resolved_prompt,
+            concurrent_worker_count=concurrent_worker_count,
         )
     except WhisperKitError as exc:
         report.add_error(
@@ -378,6 +409,8 @@ def _run_whisperkit(
     report.native_json_path = str(artifacts["native_json"])
     report.srt_path = str(artifacts.get("srt", ""))
     report.log_path = str(artifacts["log"])
+    report.rttm_path = str(artifacts.get("rttm", ""))
+    report.metrics_path = str(artifacts.get("metrics", ""))
 
     transcript_path = out_dir / "transcript.md"
     try:
@@ -415,6 +448,8 @@ def _run_provider(
             speaker_count=args.speaker_count,
             diarization_model_path=args.diarization_model_path,
             download_timeout=args.download_timeout,
+            prompt=args.prompt,
+            concurrent_worker_count=args.concurrent_worker_count,
         )
     return _run_tingwu(
         audio_url,
@@ -574,6 +609,17 @@ def _parse_args(argv=None) -> argparse.Namespace:
         "--language",
         default="zh",
         help="WhisperKit 语言代码；传空字符串可自动检测（默认 zh）",
+    )
+    parser.add_argument(
+        "--prompt",
+        default=None,
+        help="WhisperKit 专有名词/术语提示；小宇宙模式默认使用标题与节目名",
+    )
+    parser.add_argument(
+        "--concurrent-worker-count",
+        type=int,
+        default=4,
+        help="WhisperKit VAD 分块并发数；0 表示不限制（默认 4）",
     )
     parser.add_argument(
         "--no-diarization",

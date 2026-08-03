@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -72,9 +73,20 @@ def download_public_audio(
     suffix = infer_audio_suffix(url, content_type_hint)
     destination = out_dir / f"source_audio{suffix}"
     partial = destination.with_suffix(destination.suffix + ".part")
+    manifest = destination.with_name(destination.name + ".download.json")
 
     if destination.exists() and destination.stat().st_size > 0:
-        return destination
+        try:
+            cached = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            cached = {}
+        if (
+            cached.get("source_url") == url
+            and cached.get("bytes") == destination.stat().st_size
+        ):
+            return destination
+        if partial.exists():
+            partial.unlink()
 
     resume_at = partial.stat().st_size if partial.exists() else 0
     headers = {"User-Agent": _USER_AGENT}
@@ -102,6 +114,14 @@ def download_public_audio(
                 for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
                         handle.write(chunk)
+            content_length = response.headers.get("Content-Length")
+            expected_bytes = None
+            if content_length and content_length.isdigit():
+                expected_bytes = int(content_length) + (resume_at if append else 0)
+            final_url = response.url
+            response_content_type = response.headers.get("Content-Type", "")
+            etag = response.headers.get("ETag", "")
+            last_modified = response.headers.get("Last-Modified", "")
     except AudioDownloadError:
         raise
     except requests.RequestException as exc:
@@ -111,5 +131,25 @@ def download_public_audio(
 
     if not partial.exists() or partial.stat().st_size == 0:
         raise AudioDownloadError("下载完成但音频文件为空。")
+    actual_bytes = partial.stat().st_size
+    if expected_bytes is not None and actual_bytes != expected_bytes:
+        raise AudioDownloadError(
+            f"音频下载不完整：期望 {expected_bytes} bytes，实际 {actual_bytes} bytes。"
+        )
     os.replace(partial, destination)
+    manifest.write_text(
+        json.dumps(
+            {
+                "source_url": url,
+                "final_url": final_url,
+                "bytes": destination.stat().st_size,
+                "content_type": response_content_type,
+                "etag": etag,
+                "last_modified": last_modified,
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     return destination
