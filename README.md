@@ -6,7 +6,7 @@
 
 一个 Agent 技能——把任何播客转写文件变成**可复用的 AI 产品经理课程**，让洞见不再听完就忘，而是持续沉淀、复利增长，真正改变你做产品决策的方式。
 
-给它一份转写文件（通义听悟免费10h 我靠求打钱），它产出结构化框架卡、决策清单、面试表达素材、个人成长日志——对于里程碑级别的单集，还能生成一个漂亮的交互式 HTML 课程。
+给它一份转写文件，或者直接给一个公开的小宇宙 / 音频链接。它可以先在 Apple Silicon Mac 上免费本地转写，再产出结构化框架卡、决策清单、面试表达素材、个人成长日志——对于里程碑级别的单集，还能生成一个漂亮的交互式 HTML 课程。
 
 ## 谁需要这个？
 
@@ -69,11 +69,36 @@
 
 ## 支持的输入格式
 
-通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts 手动转写 · 任意 STT 工具转写 · 你自己的笔记
+WhisperKit 本地转写 · 通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙公开链接 · 公网 `.m4a/.mp3` 链接 · 任意 STT 工具转写 · 你自己的笔记
 
 ## 输入模式（自动转写入口）
 
-还没有转写稿？`podcast-to-course/scripts/ingest_podcast.py` 可以帮你生成。三种互斥模式：
+还没有转写稿？`podcast-to-course/scripts/ingest_podcast.py` 可以帮你生成。默认 `--provider auto`：优先使用免费的本地 WhisperKit，未安装时才回退到已配置的通义听悟。
+
+### 本地免费方案（推荐）
+
+需要 Apple Silicon Mac。WhisperKit 与 SpeakerKit 都通过 [Argmax OSS Swift](https://github.com/argmaxinc/argmax-oss-swift) CLI 调用，音频和转写过程留在本机；首次运行会联网下载模型。
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+brew install whisperkit-cli
+```
+
+如果 Homebrew 下载失败，也可以从官方 Swift 仓库构建 CLI，并通过
+`--whisperkit-cli /path/to/argmax-cli` 指定可执行文件：
+
+```bash
+git clone https://github.com/argmaxinc/argmax-oss-swift.git
+cd argmax-oss-swift
+swift build -c release --product argmax-cli
+```
+
+超过 2 小时的音频会使用增量加载和 VAD 切块，不设人为时长上限；实际速度与上限由 Mac 性能、磁盘和模型决定。默认开启 SpeakerKit 说话人分离。
+正文始终来自 WhisperKit 原生词级时间戳，RTTM 只负责说话人归属，避免分离结果把 `LibLib`、`PMF` 等词拆坏。系统还会以物理音频时长校验尾部漂移，并输出机器可读的质量指标。
+
+### 三种互斥输入
 
 **1. Transcript Mode — 你已有转写稿（免费、纯本地、不调 API）**
 
@@ -88,22 +113,70 @@ python podcast-to-course/scripts/ingest_podcast.py \
 ```bash
 python podcast-to-course/scripts/ingest_podcast.py \
   --url "https://www.xiaoyuzhoufm.com/episode/..." \
-  --provider tingwu \
   --out outputs/demo
 ```
 
-先解析页面里的公开 `audio_url`，再提交给通义听悟做 ASR 转写，产出 `transcript.md`。**不下载音频本体**。
+先解析页面里的公开 `audio_url`，下载到可续传的本地缓存，再由 WhisperKit 转写并产出 `transcript.md`。
 
 **3. Audio URL Mode — 公网可直接访问的音频文件 URL**
 
 ```bash
 python podcast-to-course/scripts/ingest_podcast.py \
   --audio-url "https://example.com/audio.m4a" \
-  --provider tingwu \
   --out outputs/demo
 ```
 
-**环境与凭据。** Python 3.10+；`pip install -r requirements.txt`。通义听悟需要你**自备**阿里云密钥（绝不提交）：
+常用参数：
+
+```bash
+# 明确使用本地 provider；已知是双人访谈可指定人数
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --provider whisperkit \
+  --speaker-count 2 \
+  --prompt "LibLib，陈冕，Evoken" \
+  --out outputs/demo
+
+# 默认 4 个 VAD worker；内存紧张时可调低
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --concurrent-worker-count 2 \
+  --out outputs/demo
+
+# 网络不稳定时，可预先下载模型并全程使用本地路径
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --provider whisperkit \
+  --whisperkit-cli /path/to/argmax-cli \
+  --model-path /path/to/whisperkit-coreml-model \
+  --diarization-model-path /path/to/speakerkit-coreml \
+  --speaker-count 2 \
+  --out outputs/demo
+
+# 关闭说话人分离，减少内存开销
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --no-diarization \
+  --out outputs/demo
+```
+
+每次成功会保留可审计的中间产物：
+
+```text
+outputs/demo/
+├── source_audio.m4a            # 可续传的本地缓存，扩展名按源文件决定
+├── source_audio.m4a.download.json # URL、字节数、ETag 等缓存身份
+├── whisperkit_native/          # WhisperKit 原生 JSON + SRT + 原始 RTTM
+├── whisperkit.log              # 完整命令和 CLI 输出
+├── raw_transcription.json      # provider 无关的稳定中间格式
+├── transcription_metrics.json # 时长、漂移、词数、覆盖率与质量警告
+├── transcript.md               # 课程生成的唯一输入
+└── ingest_report.md            # provider、模型、路径和错误记录
+```
+
+### 通义听悟回退（可选）
+
+若要显式使用云端听悟，传 `--provider tingwu` 并配置自己的阿里云密钥（绝不提交）：
 
 ```bash
 export ALIBABA_CLOUD_ACCESS_KEY_ID="..."
@@ -115,9 +188,12 @@ export TINGWU_APP_KEY="..."
 
 **边界说明。**
 - 只支持**公开可访问**内容。不绕过登录、付费、会员、加密、私有内容。
+- 本地方案会下载音频到输出目录，并在后续重跑时复用或续传；大文件不会提交到 Git。
+- 完整缓存只在 URL 与字节数均匹配时复用；同名但不同来源的音频不会误命中。
+- `auto` 的顺序是 WhisperKit → 已配置的听悟。需要固定行为时显式传 `--provider`。
 - 通义听悟**仅用于 ASR 转写**——其摘要/章节/问答能力不作为课程内容。
-- `--transcript` **不产生**听悟费用；`--url` / `--audio-url` 会调用付费 API，**可能产生费用**。
-- 当前 `--provider` 仅支持 `tingwu`。自动解析失败时，可回退到 Transcript Mode。
+- WhisperKit 与 `--transcript` 不产生 ASR API 费用；只有选中听悟时才可能产生云端费用。
+- 自动解析或转写失败时，不能用 shownotes 冒充全文；请检查 `ingest_report.md`，或回退到 Transcript Mode。
 
 ## 设计哲学
 
@@ -167,13 +243,15 @@ git clone https://github.com/Cobb04/podcast-to-course.git ~/.agents/skills/podca
 .
 ├── README.md                        # 中文首页（默认）
 ├── README_EN.md                     # 英文版说明
-├── requirements.txt                 # ingest 层依赖（requests、bs4、阿里云 SDK）
+├── requirements.txt                 # ingest 层依赖（下载/解析；听悟 SDK 为可选 provider）
 ├── .env.example                     # 凭据模板（绝不提交真实密钥）
 └── podcast-to-course/
     ├── SKILL.md                      # 主技能指令
     ├── scripts/                      # ingest 层 → 产出 transcript.md
     │   ├── ingest_podcast.py         # 统一 CLI（url / audio-url / transcript）
+    │   ├── audio_download.py         # 公网音频缓存 + 断点续传
     │   ├── extract_xiaoyuzhou_audio.py
+    │   ├── whisperkit_client.py      # 免费本地 WhisperKit/SpeakerKit provider
     │   ├── tingwu_client.py          # 通义听悟离线转写封装
     │   ├── tingwu_smoke_test.py
     │   └── normalize_transcript.py

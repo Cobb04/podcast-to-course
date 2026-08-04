@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""把通义听悟 raw_transcription.json 标准化为可读的 transcript.md。
+"""把 provider 无关的 raw_transcription.json 标准化为可读的 transcript.md。
 
-兼容通义听悟返回的不同 JSON 层级：
+兼容本地 WhisperKit 适配结果与通义听悟返回的不同 JSON 层级：
     Transcription
       ├── AudioInfo      (Duration / SampleRate / Language)
       ├── Paragraphs[]   ← 首选：每段含 SpeakerId + Words[](Start/End/Text，单位毫秒)
@@ -177,7 +177,11 @@ def normalize_to_markdown(raw: dict, *, source_meta: Optional[dict] = None) -> s
             header.append(f"Title: {source_meta['title']}")
         if source_meta.get("podcast_name"):
             header.append(f"Podcast: {source_meta['podcast_name']}")
-    header.append("Transcribed by: Alibaba Tingwu")
+    provider = str(raw.get("Provider", "tingwu")).lower()
+    provider_label = (
+        "WhisperKit (local)" if provider == "whisperkit" else "Alibaba Tingwu"
+    )
+    header.append(f"Transcribed by: {provider_label}")
     header.append(f"Duration: {duration_str}")
     header.append(f"Language: {language}")
     header.append(f"Generated at: {_now_iso()}")

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""统一 ingest CLI：把三种输入统一转成 transcript.md，交给现有课程生成逻辑。
+"""统一 ingest CLI：把三种输入统一转成 transcript.md，交给课程生成逻辑。
 
 三种互斥输入：
-    --url        小宇宙公开单集链接 → 解析 audio_url → 通义听悟转写 → 标准化
-    --audio-url  公网音频 URL       → 通义听悟转写 → 标准化
-    --transcript 已有本地转写稿      → 直接标准化/复制（不调用通义听悟）
+    --url        小宇宙公开单集链接 → 解析 audio_url → 本地/云端转写 → 标准化
+    --audio-url  公网音频 URL       → 本地/云端转写 → 标准化
+    --transcript 已有本地转写稿      → 直接标准化/复制（不调用 ASR）
 
 统一输出目录结构：
     outputs/demo/
@@ -14,11 +14,11 @@
       └── ingest_report.md       (总是产出，记录全过程与错误)
 
 ingest 层只负责产出 transcript.md，不与课程生成逻辑耦合。
-复用：tingwu_client / extract_xiaoyuzhou_audio / normalize_transcript。
+默认 provider=auto：优先使用免费的本地 WhisperKit，未安装时回退到已配置的听悟。
 
 用法：
-    python scripts/ingest_podcast.py --url "<小宇宙链接>" --provider tingwu --out outputs/demo
-    python scripts/ingest_podcast.py --audio-url "<音频URL>" --provider tingwu --out outputs/demo
+    python scripts/ingest_podcast.py --url "<小宇宙链接>" --out outputs/demo
+    python scripts/ingest_podcast.py --audio-url "<音频URL>" --provider whisperkit --out outputs/demo
     python scripts/ingest_podcast.py --transcript path/to/transcript.md --out outputs/demo
     python scripts/ingest_podcast.py --help
 """
@@ -46,8 +46,62 @@ from tingwu_client import (  # noqa: E402
 )
 from extract_xiaoyuzhou_audio import ExtractError, extract_episode  # noqa: E402
 from normalize_transcript import NormalizeError, write_transcript  # noqa: E402
+from audio_download import AudioDownloadError, download_public_audio  # noqa: E402
+from whisperkit_client import (  # noqa: E402
+    DEFAULT_MODEL,
+    WhisperKitError,
+    find_whisperkit_cli,
+    transcribe_with_whisperkit,
+)
 
-SUPPORTED_PROVIDERS = ("tingwu",)
+SUPPORTED_PROVIDERS = ("auto", "whisperkit", "tingwu")
+
+
+class ProviderError(RuntimeError):
+    """No usable transcription provider is available."""
+
+
+def select_provider(
+    requested: str,
+    *,
+    whisperkit_available: bool,
+    tingwu_available: bool,
+) -> str:
+    """Resolve a provider without performing network or transcription work."""
+    if requested not in SUPPORTED_PROVIDERS:
+        raise ProviderError(
+            f"不支持的 provider: {requested}。可选：{', '.join(SUPPORTED_PROVIDERS)}"
+        )
+    if requested == "whisperkit":
+        if not whisperkit_available:
+            raise ProviderError(
+                "找不到 WhisperKit CLI。Apple Silicon Mac 可运行："
+                "brew install whisperkit-cli"
+            )
+        return "whisperkit"
+    if requested == "tingwu":
+        if not tingwu_available:
+            raise ProviderError(
+                "听悟凭据未配置完整：需要 ALIBABA_CLOUD_ACCESS_KEY_ID、"
+                "ALIBABA_CLOUD_ACCESS_KEY_SECRET、TINGWU_APP_KEY。"
+            )
+        return "tingwu"
+    if whisperkit_available:
+        return "whisperkit"
+    if tingwu_available:
+        return "tingwu"
+    raise ProviderError(
+        "没有可用的转写 provider。免费本地方案：brew install whisperkit-cli；"
+        "或配置听悟的三个环境变量。"
+    )
+
+
+def _tingwu_credentials_available() -> bool:
+    try:
+        TingwuCredentials.from_env()
+    except TingwuError:
+        return False
+    return True
 
 
 def _now_iso() -> str:
@@ -61,6 +115,7 @@ class Report:
         self.mode = mode
         self.input_value = input_value
         self.provider = provider
+        self.selected_provider = ""
         self.out_dir = out_dir
         self.started_at = _now_iso()
         self.finished_at = ""
@@ -76,6 +131,19 @@ class Report:
 
         # Transcription 段
         self.tingwu_called = "no"
+        self.whisperkit_called = "no"
+        self.whisperkit_cli = ""
+        self.model = ""
+        self.prompt = ""
+        self.concurrent_worker_count = ""
+        self.diarization = ""
+        self.diarization_model_path = ""
+        self.local_audio_path = ""
+        self.native_json_path = ""
+        self.srt_path = ""
+        self.log_path = ""
+        self.rttm_path = ""
+        self.metrics_path = ""
         self.task_id = ""
         self.final_status = ""
         self.raw_path = ""
@@ -98,7 +166,8 @@ class Report:
 
 - Input mode: {self.mode}
 - Input value: {self.input_value}
-- Provider: {self.provider}
+- Requested provider: {self.provider}
+- Selected provider: {self.selected_provider}
 - Output directory: {self.out_dir}
 - Started at: {self.started_at}
 - Finished at: {self.finished_at}
@@ -116,6 +185,19 @@ class Report:
 ## Transcription
 
 - Tingwu called: {self.tingwu_called}
+- WhisperKit called: {self.whisperkit_called}
+- WhisperKit CLI: {self.whisperkit_cli}
+- Model: {self.model}
+- ASR prompt: {self.prompt}
+- Concurrent worker count: {self.concurrent_worker_count}
+- Diarization: {self.diarization}
+- Diarization model path: {self.diarization_model_path}
+- Cached audio: {self.local_audio_path}
+- Native WhisperKit JSON: {self.native_json_path}
+- SRT: {self.srt_path}
+- WhisperKit log: {self.log_path}
+- Speaker RTTM: {self.rttm_path}
+- Transcription metrics: {self.metrics_path}
 - TaskId: {self.task_id}
 - Final TaskStatus: {self.final_status}
 - raw_transcription.json: {self.raw_path}
@@ -238,6 +320,147 @@ def _run_tingwu(
     return transcript_path
 
 
+def build_asr_prompt(
+    source_meta: Optional[dict], explicit_prompt: Optional[str]
+) -> Optional[str]:
+    """Build a short ASR vocabulary hint; metadata never becomes transcript text."""
+    if explicit_prompt and explicit_prompt.strip():
+        return explicit_prompt.strip()[:500]
+    if not source_meta:
+        return None
+    values = [
+        str(source_meta.get(key, "")).strip()
+        for key in ("title", "podcast_name")
+    ]
+    prompt = "，".join(value for value in values if value)
+    return prompt[:500] or None
+
+
+def _run_whisperkit(
+    audio_url: str,
+    out_dir: Path,
+    report: Report,
+    *,
+    source_meta: Optional[dict],
+    executable: str,
+    model: str,
+    model_path: Optional[Path],
+    language: str,
+    diarization: bool,
+    speaker_count: int,
+    diarization_model_path: Optional[Path],
+    download_timeout: int,
+    prompt: Optional[str],
+    concurrent_worker_count: int,
+) -> Optional[Path]:
+    """Download public audio, transcribe locally, and normalize the result."""
+    report.whisperkit_called = "yes"
+    report.whisperkit_cli = executable
+    report.model = str(model_path) if model_path else model
+    resolved_prompt = build_asr_prompt(source_meta, prompt)
+    report.prompt = resolved_prompt or ""
+    report.concurrent_worker_count = str(concurrent_worker_count)
+    report.diarization = "enabled" if diarization else "disabled"
+    report.diarization_model_path = str(diarization_model_path or "")
+    report.log_path = str(out_dir / "whisperkit.log")
+
+    try:
+        audio_path = download_public_audio(
+            audio_url,
+            out_dir,
+            timeout_seconds=download_timeout,
+            content_type_hint=report.audio_content_type,
+        )
+    except AudioDownloadError as exc:
+        report.add_error(
+            "音频下载",
+            str(exc),
+            "确认链接是公开的音频直链；失败的 .part 文件会保留供下次断点续传。",
+        )
+        return None
+
+    report.local_audio_path = str(audio_path)
+    print(f"[ingest] 音频缓存完成：{audio_path}")
+    print("[ingest] 开始本地转写；首次运行会下载模型，长音频需要较长时间。")
+    try:
+        artifacts = transcribe_with_whisperkit(
+            audio_path,
+            out_dir,
+            executable=executable,
+            model=model,
+            model_path=model_path,
+            language=language or None,
+            diarization=diarization,
+            speaker_count=speaker_count,
+            diarization_model_path=diarization_model_path,
+            prompt=resolved_prompt,
+            concurrent_worker_count=concurrent_worker_count,
+        )
+    except WhisperKitError as exc:
+        report.add_error(
+            "WhisperKit 本地转写",
+            str(exc),
+            "查看 whisperkit.log；首次运行还会下载模型，请确认磁盘与网络可用。",
+        )
+        return None
+
+    raw_path = artifacts["raw"]
+    report.raw_path = str(raw_path)
+    report.native_json_path = str(artifacts["native_json"])
+    report.srt_path = str(artifacts.get("srt", ""))
+    report.log_path = str(artifacts["log"])
+    report.rttm_path = str(artifacts.get("rttm", ""))
+    report.metrics_path = str(artifacts.get("metrics", ""))
+
+    transcript_path = out_dir / "transcript.md"
+    try:
+        write_transcript(raw_path, transcript_path, source_meta=source_meta)
+    except NormalizeError as exc:
+        report.add_error(
+            "标准化 normalization",
+            str(exc),
+            "WhisperKit 原生 JSON 与 raw_transcription.json 已保留，请检查结构。",
+        )
+        return None
+    report.transcript_path = str(transcript_path)
+    return transcript_path
+
+
+def _run_provider(
+    audio_url: str,
+    out_dir: Path,
+    report: Report,
+    args,
+    *,
+    source_meta: Optional[dict],
+) -> Optional[Path]:
+    if args.resolved_provider == "whisperkit":
+        return _run_whisperkit(
+            audio_url,
+            out_dir,
+            report,
+            source_meta=source_meta,
+            executable=args.resolved_whisperkit_cli,
+            model=args.model,
+            model_path=args.model_path,
+            language=args.language,
+            diarization=not args.no_diarization,
+            speaker_count=args.speaker_count,
+            diarization_model_path=args.diarization_model_path,
+            download_timeout=args.download_timeout,
+            prompt=args.prompt,
+            concurrent_worker_count=args.concurrent_worker_count,
+        )
+    return _run_tingwu(
+        audio_url,
+        out_dir,
+        report,
+        source_meta=source_meta,
+        poll_interval=args.interval,
+        poll_max_minutes=args.max_minutes,
+    )
+
+
 def _mode_url(args, out_dir: Path, report: Report) -> bool:
     """小宇宙链接模式。返回是否成功。"""
     # 解析单集
@@ -265,13 +488,12 @@ def _mode_url(args, out_dir: Path, report: Report) -> bool:
     audio_url = episode["audio_url"]
     report.audio_content_type = _check_content_type(audio_url)
 
-    transcript = _run_tingwu(
+    transcript = _run_provider(
         audio_url,
         out_dir,
         report,
+        args,
         source_meta=episode,
-        poll_interval=args.interval,
-        poll_max_minutes=args.max_minutes,
     )
     return transcript is not None
 
@@ -296,13 +518,12 @@ def _mode_audio_url(args, out_dir: Path, report: Report) -> bool:
     report.audio_url_extracted = "yes"
     report.audio_content_type = _check_content_type(args.audio_url)
 
-    transcript = _run_tingwu(
+    transcript = _run_provider(
         args.audio_url,
         out_dir,
         report,
+        args,
         source_meta=None,
-        poll_interval=args.interval,
-        poll_max_minutes=args.max_minutes,
     )
     return transcript is not None
 
@@ -349,8 +570,9 @@ def _parse_args(argv=None) -> argparse.Namespace:
 
     parser.add_argument(
         "--provider",
-        default="tingwu",
-        help="转写服务商，当前仅支持 tingwu（默认 tingwu）",
+        choices=SUPPORTED_PROVIDERS,
+        default="auto",
+        help="转写 provider：auto 优先免费本地 WhisperKit，再回退听悟（默认 auto）",
     )
     parser.add_argument(
         "--out",
@@ -367,6 +589,61 @@ def _parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument(
         "--max-minutes", type=int, default=30, help="通义听悟最长等待分钟（默认30）"
     )
+    parser.add_argument(
+        "--whisperkit-cli",
+        default=None,
+        help="WhisperKit/Argmax CLI 路径（默认从 PATH 或 WHISPERKIT_CLI 查找）",
+    )
+    parser.add_argument(
+        "--model",
+        default=DEFAULT_MODEL,
+        help=f"WhisperKit 模型（默认 {DEFAULT_MODEL}）",
+    )
+    parser.add_argument(
+        "--model-path",
+        type=Path,
+        default=None,
+        help="已下载的 WhisperKit 模型目录；设置后不再在线下载 --model",
+    )
+    parser.add_argument(
+        "--language",
+        default="zh",
+        help="WhisperKit 语言代码；传空字符串可自动检测（默认 zh）",
+    )
+    parser.add_argument(
+        "--prompt",
+        default=None,
+        help="WhisperKit 专有名词/术语提示；小宇宙模式默认使用标题与节目名",
+    )
+    parser.add_argument(
+        "--concurrent-worker-count",
+        type=int,
+        default=4,
+        help="WhisperKit VAD 分块并发数；0 表示不限制（默认 4）",
+    )
+    parser.add_argument(
+        "--no-diarization",
+        action="store_true",
+        help="关闭本地说话人分离（更省内存，但 transcript 不标注说话人）",
+    )
+    parser.add_argument(
+        "--speaker-count",
+        type=int,
+        default=0,
+        help="已知说话人数；0 表示自动判断（默认 0）",
+    )
+    parser.add_argument(
+        "--diarization-model-path",
+        type=Path,
+        default=None,
+        help="已下载的 SpeakerKit 模型目录；设置后不再在线下载说话人模型",
+    )
+    parser.add_argument(
+        "--download-timeout",
+        type=int,
+        default=60,
+        help="音频下载单次读取超时秒数（默认 60）",
+    )
     return parser.parse_args(argv)
 
 
@@ -382,16 +659,6 @@ def main(argv=None) -> int:
     else:
         mode, input_value = "transcript", args.transcript
 
-    # provider 校验（transcript 模式不需要转写服务，跳过校验）
-    needs_provider = mode in ("xiaoyuzhou_url", "audio_url")
-    if needs_provider and args.provider not in SUPPORTED_PROVIDERS:
-        print(
-            f"[错误] 不支持的 provider: {args.provider}。"
-            f"当前仅支持：{', '.join(SUPPORTED_PROVIDERS)}",
-            file=sys.stderr,
-        )
-        return 2
-
     # 覆盖保护
     transcript_target = out_dir / "transcript.md"
     if transcript_target.exists() and not args.force:
@@ -404,7 +671,29 @@ def main(argv=None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     report = Report(mode, input_value, args.provider, out_dir)
 
-    print(f"[ingest] 模式={mode} 输出={out_dir}")
+    # transcript 模式不需要 ASR；其他模式在开始下载前解析实际 provider。
+    if mode in ("xiaoyuzhou_url", "audio_url"):
+        args.resolved_whisperkit_cli = find_whisperkit_cli(args.whisperkit_cli)
+        try:
+            args.resolved_provider = select_provider(
+                args.provider,
+                whisperkit_available=bool(args.resolved_whisperkit_cli),
+                tingwu_available=_tingwu_credentials_available(),
+            )
+        except ProviderError as exc:
+            report.add_error("Provider 选择", str(exc))
+            report.write()
+            print(f"[错误] {exc}", file=sys.stderr)
+            return 2
+        report.selected_provider = args.resolved_provider
+    else:
+        args.resolved_provider = "none"
+        args.resolved_whisperkit_cli = ""
+        report.selected_provider = "none (transcript input)"
+
+    print(
+        f"[ingest] 模式={mode} provider={args.resolved_provider} 输出={out_dir}"
+    )
 
     try:
         if mode == "xiaoyuzhou_url":

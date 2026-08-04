@@ -15,16 +15,22 @@ Every course is built from a **`transcript.md`**. Before any course generation, 
 
 **Routing rules:**
 - **User provides a transcript** → go straight to course generation. No ingestion needed.
-- **User provides a Xiaoyuzhou (小宇宙) public episode link** → run `ingest_podcast.py --url` first. It extracts the public `audio_url`, calls Alibaba Tingwu for transcription, and produces `transcript.md`.
-- **User provides a public audio URL** (a direct media file, not a web page) → run `ingest_podcast.py --audio-url`. It sends the URL to Tingwu and produces `transcript.md`.
+- **User provides a Xiaoyuzhou (小宇宙) public episode link** → run `ingest_podcast.py --url` first. It extracts the public `audio_url`, selects a transcription provider, and produces `transcript.md`.
+- **User provides a public audio URL** (a direct media file, not a web page) → run `ingest_podcast.py --audio-url`. It selects a transcription provider and produces `transcript.md`.
+- **Provider selection** → the default `auto` route prefers free, on-device WhisperKit/SpeakerKit when its CLI is installed; it falls back to Alibaba Tingwu only when Tingwu credentials are configured. Respect an explicit `--provider whisperkit|tingwu` choice.
 - **Automatic parsing or transcription fails** → do NOT fabricate a course from shownotes or episode descriptions. Tell the user the ingestion failed and ask them to provide a transcript directly (Transcript Mode).
 
 **Hard rules for input:**
 - All course generation MUST be based on `transcript.md`. Shownotes are auxiliary metadata only — they can enrich titles/attribution, but they can NEVER substitute for the transcript.
 - Do NOT bypass paywalls, login walls, encrypted media, or private content. Only public, openly accessible episodes are supported.
 - Do NOT claim support for arbitrary podcast platforms. Supported ingestion is: Xiaoyuzhou public episodes, public audio URLs, and existing transcripts.
+- WhisperKit local mode downloads the public audio into the selected output directory. It preserves the URL-bound download manifest, native JSON, SRT, raw RTTM, CLI log, canonical `raw_transcription.json`, `transcription_metrics.json`, and `ingest_report.md`; use the report and metrics for failure diagnosis.
+- When model-host access is unreliable, use pre-downloaded WhisperKit and SpeakerKit Core ML directories through `--model-path` and `--diarization-model-path`; do not silently disable diarization when its model cannot load.
+- Long local audio uses incremental loading plus VAD chunking. Do not claim a guaranteed unlimited runtime: local compute, memory, disk, source quality, and model behavior remain practical limits.
+- Keep canonical transcript text from WhisperKit native words and use RTTM only for speaker attribution. When known, pass `--speaker-count`; use `--prompt` for short proper-noun hints, and lower `--concurrent-worker-count` on memory-constrained machines.
+- Treat `transcription_metrics.json` warnings as a review gate before course generation. Never use words beyond both physical audio duration and diarization coverage, and never treat the largest model timestamp as the physical duration.
 - Tingwu is used **only as an ASR transcription provider**. Do NOT use Tingwu's summarization, chapter, QA, or mind-map outputs as course content. Course generation, judgment exercises, and LLM-Wiki assets are produced by THIS skill, from the transcript.
-- The `--url` and `--audio-url` modes call a paid API (Tingwu) and may incur cost. `--transcript` mode is fully local and free. Prefer validating with the short official sample via `tingwu_smoke_test.py` before running long episodes.
+- WhisperKit and `--transcript` mode do not incur ASR API fees. Tingwu may incur cost only when selected. Prefer validating either provider with a short public audio sample before running a long episode.
 
 ## Three Output Tiers
 
@@ -319,10 +325,10 @@ When the skill is first triggered and the user hasn't provided a transcript yet,
 > - **Process a full episode** — send me the transcript, I'll extract frameworks, counter-intuitive insights, decision checklists, and scenario quizzes.
 > - **Review your own notes** — send me what you wrote down after listening, I'll help you catch blind spots and structure your thinking.
 >
-> **Automated ingestion (optional — see README):** If you don't have a transcript yet, I can build one from a **Xiaoyuzhou (小宇宙) public episode link** or a **public audio URL** via `scripts/ingest_podcast.py` (transcribed by Alibaba Tingwu). Only public, openly accessible content — no paywalled, login-gated, or private media. This calls a paid API; the transcript route below is always free.
+> **Automated ingestion (optional — see README):** If you don't have a transcript yet, I can build one from a **Xiaoyuzhou (小宇宙) public episode link** or a **public audio URL** via `scripts/ingest_podcast.py`. On Apple Silicon, `auto` prefers free on-device WhisperKit/SpeakerKit and can fall back to configured Alibaba Tingwu credentials. Only public, openly accessible content — no paywalled, login-gated, or private media.
 >
 > **Supported input formats (best → good):**
-> - Xiaoyuzhou public episode link or public audio URL (auto-transcribed via Tingwu)
+> - Xiaoyuzhou public episode link or public audio URL (auto-transcribed locally when WhisperKit is installed)
 > - 通义听悟 transcript export (.txt / .md / .docx)
 > - 飞书妙记 transcript export
 > - YouTube transcript (paste or .txt)

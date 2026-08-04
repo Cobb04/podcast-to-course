@@ -4,7 +4,7 @@
 
 A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
 
-Send it a transcript. Get back structured framework cards, decision checklists, interview talking points, a personal growth log — and for landmark episodes, a beautiful interactive HTML course.
+Send it a transcript or a public Xiaoyuzhou/audio URL. On Apple Silicon it can transcribe locally for free first, then produce structured framework cards, decision checklists, interview talking points, a personal growth log — and for landmark episodes, a beautiful interactive HTML course.
 
 ## Who is this for?
 
@@ -67,11 +67,27 @@ A self-contained, zero-dependency HTML file — double-click to open. For landma
 
 ## Supported input formats
 
-通义听悟 · 飞书妙记 · YouTube transcript · 小宇宙 / Apple Podcasts manual transcription · Any STT-transcribed audio · Your own notes
+Local WhisperKit · 通义听悟 · 飞书妙记 · YouTube transcript · public Xiaoyuzhou links · public `.m4a/.mp3` URLs · Any STT-transcribed audio · Your own notes
 
 ## Input Modes (automated ingestion)
 
-If you don't have a transcript yet, `podcast-to-course/scripts/ingest_podcast.py` can build one for you. Three mutually-exclusive modes:
+If you don't have a transcript yet, `podcast-to-course/scripts/ingest_podcast.py` can build one for you. Its default, `--provider auto`, prefers free local WhisperKit and only falls back to configured Tingwu credentials.
+
+### Free local setup (recommended)
+
+This path requires an Apple Silicon Mac. WhisperKit and SpeakerKit are invoked through the [Argmax OSS Swift](https://github.com/argmaxinc/argmax-oss-swift) CLI; audio and transcription stay on the machine. The first run downloads the selected model.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+brew install whisperkit-cli
+```
+
+Audio longer than two hours uses incremental loading and VAD chunking with no artificial duration cap. Practical limits are local compute, disk, memory, and model behavior. SpeakerKit diarization is enabled by default.
+Canonical text always comes from WhisperKit's native word timestamps; RTTM only supplies speaker attribution, so diarization cannot corrupt terms such as `LibLib` or `PMF`. Physical audio duration is used to detect trailing timestamp drift, with machine-readable quality metrics saved for every run.
+
+### Three mutually exclusive inputs
 
 **1. Transcript Mode — you already have a transcript (free, local, no API)**
 
@@ -86,22 +102,60 @@ python podcast-to-course/scripts/ingest_podcast.py \
 ```bash
 python podcast-to-course/scripts/ingest_podcast.py \
   --url "https://www.xiaoyuzhoufm.com/episode/..." \
-  --provider tingwu \
   --out outputs/demo
 ```
 
-It parses the page for the public `audio_url`, submits it to Alibaba Tingwu for ASR, and produces `transcript.md`. It does **not** download the audio itself.
+It extracts the public `audio_url`, downloads it into a resumable local cache, and uses WhisperKit to produce `transcript.md`.
 
 **3. Audio URL Mode — a public, directly-accessible audio file URL**
 
 ```bash
 python podcast-to-course/scripts/ingest_podcast.py \
   --audio-url "https://example.com/audio.m4a" \
-  --provider tingwu \
   --out outputs/demo
 ```
 
-**Setup & credentials.** Python 3.10+; `pip install -r requirements.txt`. Tingwu needs your own Alibaba Cloud keys (never committed):
+Useful controls:
+
+```bash
+# Pin the local provider and tell diarization this is a two-person interview
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --provider whisperkit \
+  --speaker-count 2 \
+  --prompt "LibLib, Chen Mian, Evoken" \
+  --out outputs/demo
+
+# The default is four VAD workers; lower it on memory-constrained machines
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --concurrent-worker-count 2 \
+  --out outputs/demo
+
+# Reduce memory use by disabling speaker diarization
+python podcast-to-course/scripts/ingest_podcast.py \
+  --audio-url "https://example.com/audio.m4a" \
+  --no-diarization \
+  --out outputs/demo
+```
+
+Successful runs preserve auditable intermediate artifacts:
+
+```text
+outputs/demo/
+├── source_audio.m4a            # resumable cache; extension follows the source
+├── source_audio.m4a.download.json # URL, byte count, ETag, and cache identity
+├── whisperkit_native/          # native WhisperKit JSON + SRT + raw RTTM
+├── whisperkit.log              # complete command and CLI output
+├── raw_transcription.json      # provider-neutral stable intermediate format
+├── transcription_metrics.json # duration, drift, counts, coverage, and warnings
+├── transcript.md               # the sole input to course generation
+└── ingest_report.md            # provider, model, paths, and errors
+```
+
+### Optional Tingwu fallback
+
+To pin the cloud provider, pass `--provider tingwu` and configure your own Alibaba Cloud keys (never committed):
 
 ```bash
 export ALIBABA_CLOUD_ACCESS_KEY_ID="..."
@@ -113,9 +167,12 @@ Validate with the short official sample first: `python podcast-to-course/scripts
 
 **Boundaries.**
 - Only **public, openly accessible** content. No bypassing paywalls, login, membership, encrypted, or private content.
+- Local mode downloads audio to the output directory and reuses or resumes it on later runs. Large media is gitignored.
+- A completed cache is reused only when both its source URL and byte count match; a same-named file from another URL is never treated as valid.
+- `auto` resolves WhisperKit → configured Tingwu. Pin `--provider` when deterministic routing matters.
 - Tingwu is used **only for ASR transcription** — its summary/chapter/QA features are not used as course content.
-- `--transcript` incurs **no** Tingwu cost. `--url` / `--audio-url` call a paid API and **may incur cost**.
-- Current `--provider` supports `tingwu` only. If auto-extraction fails, fall back to Transcript Mode.
+- WhisperKit and `--transcript` incur no ASR API fee. Cloud charges are possible only when Tingwu is selected.
+- If extraction or transcription fails, never substitute shownotes for a transcript. Inspect `ingest_report.md` or fall back to Transcript Mode.
 
 ## Design philosophy
 
@@ -165,13 +222,15 @@ Then say in Claude Code: *"Turn this podcast transcript into a course"*
 .
 ├── README.md                        # Chinese landing page (default)
 ├── README_EN.md                     # English version
-├── requirements.txt                 # ingest-layer deps (requests, bs4, aliyun SDK)
+├── requirements.txt                 # download/parsing deps; Tingwu SDK is an optional provider
 ├── .env.example                     # credential template (never commit real keys)
 └── podcast-to-course/
     ├── SKILL.md                      # Main skill instructions
     ├── scripts/                      # ingest layer → produces transcript.md
     │   ├── ingest_podcast.py         # unified CLI (url / audio-url / transcript)
+    │   ├── audio_download.py         # public audio cache + Range resume
     │   ├── extract_xiaoyuzhou_audio.py
+    │   ├── whisperkit_client.py      # free local WhisperKit/SpeakerKit provider
     │   ├── tingwu_client.py          # Tingwu offline-ASR wrapper
     │   ├── tingwu_smoke_test.py
     │   └── normalize_transcript.py
