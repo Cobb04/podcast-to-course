@@ -3,7 +3,7 @@
 [English](README_EN.md) | [中文](README.md)
 
 <p align="center">
-  <img src="assets/podcast-to-course-demo.png" alt="Podcast to Course：把播客转化为结构化、可复用的判断工具" width="960">
+  <img src="assets/podcast-to-course-demo-rounded.png" alt="Podcast to Course：把播客转化为结构化、可复用的判断工具" width="960">
 </p>
 
 **听播客时：醍醐灌顶。第二天开会：那位嘉宾说过一个特别厉害的……叫什么来着？**
