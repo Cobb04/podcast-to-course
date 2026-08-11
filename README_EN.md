@@ -3,7 +3,7 @@
 [English](README_EN.md) | [中文](README.md)
 
 <p align="center">
-  <img src="assets/podcast-to-course-demo.gif" alt="Podcast to Course turns podcasts into structured, reusable judgment tools" width="960">
+  <img src="assets/podcast-to-course-demo.png" alt="Podcast to Course turns podcasts into structured, reusable judgment tools" width="960">
 </p>
 
 A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
