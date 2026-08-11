@@ -3,12 +3,8 @@
 [English](README_EN.md) | [中文](README.md)
 
 <p align="center">
-  <a href="https://cobb04.github.io/podcast-to-course.html">
-    <img src="assets/podcast-to-course-demo.gif" alt="Podcast to Course turns podcasts into structured, reusable judgment tools" width="960">
-  </a>
+  <img src="assets/podcast-to-course-demo.gif" alt="Podcast to Course turns podcasts into structured, reusable judgment tools" width="960">
 </p>
-
-<p align="center"><a href="https://cobb04.github.io/podcast-to-course.html">Turn podcasts from something you heard into something you can use — view the interactive experience →</a></p>
 
 A Claude Code skill that turns any podcast transcript into **reusable AI judgment assets** — so the insights stick, compound, and actually change how you make product decisions.
 
