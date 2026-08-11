@@ -2,6 +2,14 @@
 
 [English](README_EN.md) | [中文](README.md)
 
+<p align="center">
+  <a href="https://cobb04.github.io/podcast-to-course.html">
+    <img src="assets/podcast-to-course-demo.gif" alt="Podcast to Course：把播客转化为结构化、可复用的判断工具" width="960">
+  </a>
+</p>
+
+<p align="center"><a href="https://cobb04.github.io/podcast-to-course.html">把播客从「听过」变成「会用」——查看交互演示 →</a></p>
+
 **听播客时：醍醐灌顶。第二天开会：那位嘉宾说过一个特别厉害的……叫什么来着？**
 
 Podcast to Course 专治这种「听过 ≈ 学会」的错觉：它把播客变成**可复用的 AI 产品经理课程**，让洞见不再从左耳朵进、右耳朵拿着离职证明出去。
